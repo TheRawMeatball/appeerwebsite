@@ -31,6 +31,7 @@
 </div>
 
 <div class="row">
+
     @{
         var SortedSessions = new Dictionary<int, SessionModel[]>();
 
@@ -38,20 +39,27 @@
         .GroupBy(x => x.Host.Id)
         .ToDictionary(
             x => x.Key,
-            x => x.OrderBy(
+            x => x
+            .Where(a => (a.Subjects & SubjectFilter) > 0)
+            .OrderBy(
                 a => a.Start
             )
             .ToArray()
         );
+
+        SortedSessions = SortedSessions
+        .Where(x => x.Value.Length > 0)
+        .ToDictionary(x => x.Key, x => x.Value);
+
+        logger.log(SortedSessions.Values.ToArray());
     }
+
     <div class="col bg-dark px-0" style="min-height:5rem;height: @(2.25*(SortedSessions.Count + (CreatedSession == null ? 0 : 1)))rem;">
         <div style="z-index:1;position:absolute;width:100%;height:100%;top:0;">
             @if (CreatedSession != null)
             {
                 double width = 100 * (CreatedSession.End - CreatedSession.Start) / TimeSpan.FromDays(1);
                 double shift = 100 * CreatedSession.Start.TimeOfDay / TimeSpan.FromDays(1);
-
-                logger.log(CreatedSession);
 
                 bool b = CreatedSession.Start.Date == CreatedSession.End.Date && Sessions
                 .Where(x => x.Host.Id == state.User.Id)
@@ -81,7 +89,6 @@
                         var lastX = 0d;
 
                         int i = 0;
-                        logger.log(group.Value);
                         foreach (var item in group.Value)
                         {
                             double width = 100 * (item.End - item.Start) / TimeSpan.FromDays(1);
@@ -120,6 +127,9 @@
 
     [Parameter]
     public bool Overlap { get; set; }
+
+    [Parameter]
+    public ushort SubjectFilter { get; set; } = ushort.MaxValue;
 
     protected override void OnAfterRender(bool firstRender)
     {

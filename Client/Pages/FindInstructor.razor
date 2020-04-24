@@ -67,7 +67,7 @@
     </div>
 </div>
 
-<Timeline Sessions="sessionsOnDate"/>
+<Timeline SubjectFilter="subjectFilter" Sessions="sessionsOnDate"/>
 
 @code
 {
@@ -83,11 +83,14 @@
 
     SessionFinderModel finderModel;
 
+    ushort subjectFilter = ushort.MaxValue;
+
     SessionModel[] sessionsOnDate = new SessionModel[0];
 
     void DigestSubjectsArray()
     {
-        finderModel.Subjects = (ushort)subjects.Aggregate((0, 0), (x,y) => (y ? x.Item1 | (1 << x.Item2) : x.Item1, x.Item2 + 1)).Item1;
+        subjectFilter = (ushort)subjects.Aggregate((0, 0), (x,y) => (y ? x.Item1 | (1 << x.Item2) : x.Item1, x.Item2 + 1)).Item1;
+        subjectFilter = subjectFilter == 0 ? ushort.MaxValue : subjectFilter;
     }
 
     protected override void OnInitialized()

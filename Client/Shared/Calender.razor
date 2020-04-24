@@ -228,8 +228,7 @@
         {
             DateSetCallback(date1, date2);    
         }
-
-        logger.log(Sessions.Select(x => new { Key = x.Key, Value = x.Value }).ToArray());
+        
         StateHasChanged();
     }
 }
