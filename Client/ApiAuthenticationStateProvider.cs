@@ -34,9 +34,9 @@ namespace csharpwebsite.Client
                 await _localStorage.RemoveItemAsync("authToken");
                 await _localStorage.RemoveItemAsync("authTokenExpiry");             
                 
-                var x = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-                NotifyAuthenticationStateChanged(Task.FromResult(x));
-                return x;
+                var _x = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                NotifyAuthenticationStateChanged(Task.FromResult(_x));
+                return _x;
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
@@ -51,12 +51,13 @@ namespace csharpwebsite.Client
             var id = await _localStorage.GetItemAsync<int>("userId");
             _state.User = await _httpClient.GetJsonAsync<UserModel>("api/users/" + id.ToString());
 
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+            var x = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+            return x;
         }
 
-        public void MarkUserAsAuthenticated(string username)
+        public void MarkUserAsAuthenticated(string token)
         {
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "apiauth"));
+            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt"));
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
             NotifyAuthenticationStateChanged(authState);
         }

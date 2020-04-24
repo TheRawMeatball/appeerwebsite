@@ -92,7 +92,7 @@ namespace csharpwebsite.Client.Services
             await _localStorage.SetItemAsync("userId", result.Id);
             await _localStorage.SetItemAsync("authToken", result.Token);
             await _localStorage.SetItemAsync("authTokenExpiry", result.Expiry);
-            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(result.Username);
+            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(result.Token);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", result.Token);
 
             return result;
