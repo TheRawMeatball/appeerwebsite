@@ -1,0 +1,51 @@
+@page "/questions/{subject}"
+@attribute [Authorize]
+@inject HttpClient http
+@inject JSLogger logger
+@inject State state
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <div class="d-flex bd-highlight mb-3">
+            <h1 class="display-4 mr-auto">Browsing @Subject questions.</h1>
+            @if (Subject != "all")
+            {
+                <a href="/questions/@Subject/ask" class="btn btn-primary my-auto mr-5">Ask</a>
+            }        
+        </div>
+        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt et dolore magna aliqua.</p>
+    </div>
+</div>
+
+<Forum apiNamespace="questions" models="questionModels">
+    <MiniContent>
+        <img style="width: 100%;" src="@Src(context)" alt="">
+    </MiniContent>
+    <FocusContent>
+        <img style="width: 100%;" src="@Src(context)" alt="">
+    </FocusContent>
+</Forum>
+
+@code {
+    
+    [Parameter]
+    public string Subject { get; set; }
+
+    List<IForumObject> questionModels;
+
+    private string Src(IForumObject obj)
+    {   
+        return $"api/questions/{obj.Id}/content";
+    }
+
+    protected override async Task OnInitializedAsync() {
+        var questionIds = await http.GetJsonAsync<int[]>($"api/questions/{Subject}/{state.User.Grade}");
+        var questionRequestTasks = questionIds.Select(async (id) => 
+        {
+            var x = await http.GetJsonAsync<QuestionModel>($"api/questions/{id}");
+            return (IForumObject)x;
+        });
+        questionModels = (await Task.WhenAll(questionRequestTasks)).ToList();
+    }
+
+}

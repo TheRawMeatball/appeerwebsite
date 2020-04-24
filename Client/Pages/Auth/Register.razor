@@ -1,0 +1,88 @@
+@page "/register"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<div class="col-sm-6 col-sm-offset-3">
+    <h3> Signup </h3>
+    <EditForm Model="RegisterModel" OnValidSubmit="HandleRegistration" OnInvalidSubmit="() => {ShowErrors=true;}">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label for="username">Username</label>
+            <InputText Id="username" class="form-control" @bind-Value="RegisterModel.Username" />
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.Password" />
+        </div>
+        <div class="form-group">
+            <label for="firstName">FirstName</label>
+            <InputText Id="firstName" class="form-control" @bind-Value="RegisterModel.FirstName" />
+        </div>
+        <div class="form-group">
+            <label for="lastName">LastName</label>
+            <InputText Id="lastName" class="form-control" @bind-Value="RegisterModel.LastName" />
+        </div>
+        <div class="form-group">
+            <select @bind="@RegisterModel.Grade" class="form-control">
+                <option value="0"> Prep </option>
+                <option value="9"> 9 </option>
+                <option value="10"> 10 </option>
+                <option value="11"> 11 </option>
+                <option value="12"> 12 </option>
+                <option value="13"> Graduated </option>
+            </select>
+        </div>
+        <div class="custom-file">
+            <InputFile name="avatar" accept="image/*" id="avatar-select" class="custom-file-input" OnChange="HandleSelection"/>
+            <label for="avatar-select" class="custom-file-label"> @FileString </label>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        @if (ShowErrors)
+        {
+            <div class="alert alert-danger mt-4" role="alert">
+                <span>@error</span>
+                <ValidationMessage For="@(() => RegisterModel.Password)" />
+                <ValidationMessage For="@(() => RegisterModel.Username)" />
+                <ValidationMessage For="@(() => RegisterModel.FirstName)" />
+                <ValidationMessage For="@(() => RegisterModel.LastName)" />
+                <ValidationMessage For="@(() => RegisterModel.Grade)" />
+            </div> 
+        }
+    </EditForm>
+</div>
+
+@code {
+
+    private RegisterModel RegisterModel = new RegisterModel();
+    IFileListEntry avatar;
+    private bool ShowErrors;
+    private string error;
+    private async Task HandleRegistration()
+    {
+        ShowErrors = false;
+
+        var result = await AuthService.Register(RegisterModel, avatar);
+
+        if (result.Error == null)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            error = result.Error;
+            ShowErrors = true;
+        }
+    }
+    
+
+    private string FileString = "Select Avatar";
+    void HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        if (file != null)
+        {
+            FileString = file.Name;
+            avatar = file;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+@namespace csharpwebsite.Client.Shared
+@inject NavigationManager nm
+
+<div class="card card-default mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title" style="margin-bottom: 0px;">@Model.DisplayTitle</h4>
+            <div style="cursor: pointer;" @onclick="GotoUserpage">@Model.Author.FirstName @Model.Author.LastName</div>
+        </div>
+    </div>
+    <div @onclick="@((e) => ClickCallback(Model))" style="cursor: pointer;">
+        @CardBody(Model)
+    </div>
+
+</div>
+
+@code {
+    
+    [Parameter]
+    public IForumObject Model { get; set; }
+
+    [Parameter]
+    public Action<IForumObject> ClickCallback { get; set; }
+
+    [Parameter]
+    public RenderFragment<IForumObject> CardBody { get; set; }
+
+    void GotoUserpage()
+    {
+        nm.NavigateTo($"user/{Model.Author.Id}");
+    }
+}

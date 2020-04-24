@@ -1,0 +1,118 @@
+@page "/findinstructor"
+@inject JSLogger logger
+@inject HttpClient http
+@inject State state
+
+<div class="row">
+    <div class="col-sm">
+        <div class="row">
+            <div class="col">
+                <h5>Set Session Lessons</h5>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c0" @bind="subjects[0]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c0">Math</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c1" @bind="subjects[1]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c1">Physics</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c2" @bind="subjects[2]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c2">Chemistry</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c3" @bind="subjects[3]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c3">Biology</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c4" @bind="subjects[4]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c4">Literature</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c5" @bind="subjects[5]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c5">History</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c6" @bind="subjects[6]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c6">Philosophy</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c7" @bind="subjects[7]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <label class="form-check-label" for="c7">English</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="c8" @bind="subjects[8]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()"> <!--Also reserve 9,10 for 8 diff 2nd lang-->
+                    <label class="form-check-label" for="c8">2nd Language</label>
+                </div>
+            </div>
+            
+            <div class="col">
+               <h1>HOSETED BY</h1>
+               <h1>NAME</h1>
+            </div>
+        </div>
+        <div class="row">
+            <!--textarea @bind="model.Description" readonly placeholder="Write a description" class="form-control col mx-3"></textarea-->
+        </div>
+        <div class="row my-2">
+            @{
+                //var disabled = model.Subjects == 0 || overlap ? "disabled" : "";
+            }
+            <button class="btn btn-primary col mx-3" @onclick="() => logger.log(1)"> Host Session </button>
+        </div>
+        
+    </div>
+    <div class="col-sm">
+        <Calender @ref="calender" DateSetCallback="SetSelectedDate" Sessions="Sessions" FinderModel="finderModel" SupportMultipleDates="false"></Calender>
+    </div>
+</div>
+
+<Timeline Sessions="sessionsOnDate"/>
+
+@code
+{
+    DateTime selectedDate = DateTime.Now.Date;
+    Dictionary<DateTime, SessionModel[]> Sessions = new Dictionary<DateTime, SessionModel[]>();
+
+    TimeSpan sessionStart = new TimeSpan(12,0,0);
+    TimeSpan sessionDuration = new TimeSpan(1, 0, 0);
+
+    Calender calender;
+
+    bool[] subjects = new bool[16];
+
+    SessionFinderModel finderModel;
+
+    SessionModel[] sessionsOnDate = new SessionModel[0];
+
+    void DigestSubjectsArray()
+    {
+        finderModel.Subjects = (ushort)subjects.Aggregate((0, 0), (x,y) => (y ? x.Item1 | (1 << x.Item2) : x.Item1, x.Item2 + 1)).Item1;
+    }
+
+    protected override void OnInitialized()
+    {
+        finderModel = new SessionFinderModel 
+        {
+            HostId = null,
+            Subjects = ushort.MaxValue,
+            GetBooked = false,
+            Grade = state.User.Grade,
+        };
+        
+    }
+
+    void SetSelectedDate(DateTime d1, DateTime _)
+    {
+        selectedDate = d1;
+
+        sessionsOnDate = Sessions
+        .Where(x => x.Key == selectedDate.AddDays(1 - selectedDate.Day))
+        .SelectMany(x => x.Value)
+        .Where(x => x.Start.Date == selectedDate)
+        .ToArray();
+
+        StateHasChanged(); 
+    }
+
+}

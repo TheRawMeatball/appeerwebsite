@@ -1,0 +1,109 @@
+@inject HttpClient http
+@inject State state
+@using System.Text.Json
+
+<div>
+    <button class="comment-button" @onclick="(e) => SetCurrentAction(CurrentAction.Reply)">Reply<span class="oi oi-comment-square"></span></button>
+    @if (state.User.Admin || state.User.Id == focusedModel.Author.Id)
+    {   
+        <button class="comment-button" @onclick="(e) => Delete()">Delete<span class="oi oi-trash"></span></button>
+    }
+</div>
+
+<div hidden="@(currentAction == CurrentAction.None)">
+    <textarea class="form-control mt-2" placeholder="Content" rows="3" style="margin-bottom: 0; height: 50px; background-color: #333; color: #fff;" @bind="@textareaText"></textarea>
+    <button class="btn btn-primary mt-2" @onclick="SubmitComment">@currentAction</button>
+</div>
+
+<div>
+    @if (!focused)
+    {
+        @for (int i = 0; i < replies.Count; i++)
+        {
+            <Comment Model="replies[i]" Depth="0" NotifyRoot="FocusOnComment" RemoveComment="(item) => { replies.Remove(item); StateHasChanged(); }"></Comment>
+        }
+    }
+    else
+    {
+        <div class="px-2 py-1 mt-2 rounded bg-secondary" style="cursor: pointer;" @onclick="() => { focused = false; }">Back to root</div>
+        <Comment Model="focusedReply" Depth="0" NotifyRoot="FocusOnComment"></Comment>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string apiNamespace { get; set; }
+
+    [Parameter]
+    public IForumObject focusedModel { get; set; }
+
+    [Parameter]
+    public Action DeleteFocusedModel { get; set; }
+
+    public List<ReplyModel> replies = new List<ReplyModel>();
+    public ReplyModel focusedReply;
+
+    public bool focused = false;
+
+    protected async override Task OnInitializedAsync () 
+    {
+        Console.WriteLine("dsad");
+        replies = await http.GetJsonAsync<List<ReplyModel>>($"api/{apiNamespace}/{focusedModel.Id}/replies");
+    }
+
+    public async Task FocusOnComment(int id)
+    {
+        focused = true;
+        focusedReply = await http.GetJsonAsync<ReplyModel>($"api/replies/{id}");
+        StateHasChanged();
+        Console.WriteLine(id);
+    }
+
+    async Task SubmitComment()
+    {
+        var request = new HttpRequestMessage(new HttpMethod("POST"), $"api/{apiNamespace}/{focusedModel.Id}/reply");
+        
+        request.Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> 
+        {
+            new KeyValuePair<string, string>("Content",textareaText)
+        });
+
+        var response = await http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var newComment = JsonSerializer.Deserialize<ReplyModel>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            newComment.Replies = new List<ReplyModel>();
+            replies.Add(newComment);
+        }
+
+        currentAction = CurrentAction.None;
+    }
+
+    async Task Delete()
+    {
+        await http.DeleteAsync($"api/{apiNamespace}/{focusedModel.Id}");
+        DeleteFocusedModel();
+    }
+
+    void SetCurrentAction (CurrentAction newAction)
+    {
+        if (currentAction == newAction)
+        {
+            currentAction = CurrentAction.None;
+        }
+        else
+        {
+            currentAction = newAction;
+        }
+        
+        if(currentAction == CurrentAction.Reply)
+        {
+            textareaText = String.Empty;
+        }
+    }
+    string textareaText;
+    CurrentAction currentAction;
+    private enum CurrentAction {None, Reply}
+}

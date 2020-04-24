@@ -1,0 +1,145 @@
+@inject JSLogger logger
+@inject State state
+
+@using Microsoft.JSInterop
+@inject IJSRuntime jsRuntime
+
+<div class="row mt-3">
+    <div class="col px-0" style="height: 2rem;">
+        <div class="schedule" style="z-index:0;position:absolute;width:100%;height:2rem;top:0;">
+            @for (int i = 0; i < 24; i++)
+            {
+                string s = (i % 2 == 0, i % 4 == 0, i % 6 == 0) switch 
+                {
+                    (true, true, true) => "d-inline-block",
+                    (true, false, true) => "d-inline-block d-sm-none d-md-inline-block",
+                    (_ , true, _) => "d-none d-sm-inline-block",
+                    (true, _, _) => "d-none d-md-inline-block",
+                    _ => "d-none d-xl-inline-block",
+                };
+
+                string time = i < 10 ?  $"0{i}:00" : $"{i}:00";
+
+                s += " pl-1 border-right-0";
+
+
+                <div class="@s noselect scheduletime pb-1">@time</div>
+            }
+            <div class="d-xl-inline-block border-right-0 noselect scheduletime pb-1"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    @{
+        var SortedSessions = new Dictionary<int, SessionModel[]>();
+
+        SortedSessions = Sessions
+        .GroupBy(x => x.Host.Id)
+        .ToDictionary(
+            x => x.Key,
+            x => x.OrderBy(
+                a => a.Start
+            )
+            .ToArray()
+        );
+    }
+    <div class="col bg-dark px-0" style="min-height:5rem;height: @(2.25*(SortedSessions.Count + (CreatedSession == null ? 0 : 1)))rem;">
+        <div style="z-index:1;position:absolute;width:100%;height:100%;top:0;">
+            @if (CreatedSession != null)
+            {
+                double width = 100 * (CreatedSession.End - CreatedSession.Start) / TimeSpan.FromDays(1);
+                double shift = 100 * CreatedSession.Start.TimeOfDay / TimeSpan.FromDays(1);
+
+                logger.log(CreatedSession);
+
+                bool b = CreatedSession.Start.Date == CreatedSession.End.Date && Sessions
+                .Where(x => x.Host.Id == state.User.Id)
+                .Where(x => x.Start < CreatedSession.End)
+                .Where(x => CreatedSession.Start < x.End)
+                .Count() == 0;
+
+                string s;
+                if (b)
+                {
+                    s = "#3a3a";
+                    Overlap = false;
+                }
+                else
+                {
+                    s = "#a23a";
+                    Overlap = true;
+                }
+
+                <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @s"></div>
+            }
+            @foreach (var group in SortedSessions)
+            {
+                <div style="border-top: 4px solid gray;border-top: 4px solid gray;height: 2.25rem;">
+                    <span style="float:left;position: relative;"><div style="position: absolute;white-space: nowrap;background: #303030;left: 0.25rem">@SortedSessions[group.Key][0].Host.FullName</div></span>
+                    @{
+                        var lastX = 0d;
+
+                        int i = 0;
+                        logger.log(group.Value);
+                        foreach (var item in group.Value)
+                        {
+                            double width = 100 * (item.End - item.Start) / TimeSpan.FromDays(1);
+                            double shift = (100 * item.Start.TimeOfDay / TimeSpan.FromDays(1)) - lastX;
+
+                            lastX += width + shift;
+
+                            var bl = i != 0 && group.Value[i - 1].End == item.Start ? "2px solid black" : "0px";
+                            var br = i != group.Value.Length - 1 && group.Value[i + 1].Start == item.End ? "2px solid black" : "0px";
+
+                            <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: #323 ;float: left; border-left: @bl; border-right: @br;" data-toggle="tooltip" data-placement="right" title="@SubjectInterpreter(item.Subjects)"></div>
+                            i++;
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="schedule" style="z-index:0;position:absolute;width:100%;height:100%;top:0;">
+            @for (int i = 0; i < 25; i++)
+            {
+                var s = i % 2 != 0 ? "d-none d-sm-inline-block" : "";
+                <div class="@s scheduleline"></div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public HostSessionModel CreatedSession { get; set; }
+    [Parameter]
+    public SessionModel[] Sessions { get; set; }
+
+    [Parameter]
+    public bool Overlap { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        ((IJSInProcessRuntime)jsRuntime).InvokeVoid("tooltip", null);
+    }
+
+    string SubjectInterpreter(ushort x)
+    {
+        var s = "";
+        for (int i = 0; i < 16; i++)
+        {
+            ushort a = (ushort)(x << (15 - i));
+            a >>= 15;
+            if (a > 0)
+            {
+                s += (s == "" ? "" : " ") + (LessonName)i;
+            }
+        }
+        return s;
+    }
+
+    enum LessonName {Math, Phys, Chem, Bio, Litr, Hist, Phil, Eng, Lng2}
+}

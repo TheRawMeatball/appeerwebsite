@@ -1,0 +1,110 @@
+@page "/questions/{subject}/ask"
+@attribute [Authorize]
+@inject HttpClient http
+@inject State state
+@inject JSLogger logger
+@inject NavigationManager NavigationManager
+
+<div class="card card-default mb-4" style="max-width: 40rem;">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title" style="margin-bottom: 0px;">
+                <!--input type="text" class="form-control" style="border: 0px; background-color: #333; color: #fff;" placeholder="Name" @bind="question.Name"-->
+                <div class="row pl-3">
+                    <input class="form-control col" list="opt" style="border: 0px; background-color: #333; color: #fff;" placeholder="Source" @bind="question.Source" @oninput="(e) => HandleTypeahead((string)e.Value)">
+                    <datalist id="opt">
+                        @foreach (var item in typeaheadCandidates)
+                        {
+                            <option value="@item"/>
+                        }
+                    </datalist>
+                    <input type="number" min="1" class="form-control col ml-2" style="border: 0px; background-color: #333; color: #fff; max-width:4rem;" placeholder="Page" @bind="question.Page">
+                </div>
+            </h4>
+            <div>@state.User.FirstName @state.User.LastName</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!--<p class="card-text"> Change to upload 
+            <textarea class="form-control" placeholder="Content" rows="3" style="margin-top: 0px; margin-bottom: 0px; height: 50px; background-color: #333; color: #fff;"></textarea>
+        </p> -->
+        <div class="custom-file mb-1">
+            <InputFile name="question" accept="image/*" id="img-select" class="custom-file-input" OnChange="HandleSelection"/>
+            <label for="img-select" class="custom-file-label"> @FileString </label>
+        </div>
+        <button class="btn btn-primary ml-auto" @onclick="OnSubmit">Submit</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Subject { get; set; }
+
+    private AskModel question = new AskModel();
+
+    async Task OnSubmit()
+    {
+        logger.log(question);
+
+        var req = new MultipartFormDataContent();
+
+        if (questionImg != null)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await questionImg.Data.CopyToAsync(ms);
+                req.Add(new ByteArrayContent(ms.GetBuffer()), "question", questionImg.Name);
+            }
+        }
+        else { return; }
+        
+        if (question.Source != null) 
+            req.Add(new StringContent(question.Source), "Source");
+        if (question.Page != null)
+            req.Add(new StringContent(question.Page.ToString()), "Page");
+        req.Add(new StringContent(Subject), "Subject");
+
+        var res = await http.PostAsync("api/questions/ask", req);
+
+        if (res.IsSuccessStatusCode) 
+        {
+            NavigationManager.NavigateTo($"questions/{Subject}");
+        }
+        
+    }
+    Timer timer;
+    void HandleTypeahead(string searchString)
+    {
+        if (timer != null)
+        {
+            timer.Dispose();
+        }
+        if (searchString.Length == 0) 
+        { 
+            typeaheadCandidates.Clear(); 
+            return; 
+        }
+        timer = new Timer(500);
+        timer.AutoReset = false;
+        timer.Elapsed += async (s,e) => 
+        {
+            typeaheadCandidates.Clear();
+            typeaheadCandidates.AddRange(await http.GetJsonAsync<string[]>($"api/questions/sources/{state.User.Grade}/{Subject}/{searchString}"));
+            StateHasChanged();
+        };
+        timer.Start();
+    }
+    List<string> typeaheadCandidates = new List<string>();
+
+    private string FileString = "Select Avatar";
+    IFileListEntry questionImg;
+    void HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        if (file != null)
+        {
+            FileString = file.Name;
+            questionImg = file;
+        }
+    }
+}

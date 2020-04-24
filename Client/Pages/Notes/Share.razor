@@ -1,0 +1,50 @@
+@page "/notes/{subject}/share"
+@attribute [Authorize]
+@inject HttpClient http
+@inject State state
+@inject JSLogger logger
+@inject NavigationManager NavigationManager
+
+<div class="card card-default mb-4" style="max-width: 40rem;">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title" style="margin-bottom: 0px;">
+                <input type="text" class="form-control" style="border: 0px; background-color: #333; color: #fff;" placeholder="Name" @bind="note.Name">
+            </h4>
+            <div>@state.User.FirstName @state.User.LastName</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="card-text">
+            <textarea class="form-control" placeholder="Content" rows="3" style="margin-top: 0px; margin-bottom: 0px; height: 50px; background-color: #333; color: #fff;" @bind="note.Content"></textarea>
+        </p>
+        <button class="btn btn-primary ml-auto" @onclick="OnSubmit">Submit</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Subject { get; set; }
+
+    private CreateModel note = new CreateModel();
+
+    async Task OnSubmit()
+    {
+        logger.log(note);
+
+        var x = await http.PostAsync("api/notes/share", new FormUrlEncodedContent(new [] 
+        {
+            new KeyValuePair<string, string>("Name", note.Name),
+            new KeyValuePair<string, string>("Content", note.Content),
+            new KeyValuePair<string, string>("Subject", Subject)
+        }));
+
+        logger.log(x);
+
+        if (x.IsSuccessStatusCode) 
+        {
+            NavigationManager.NavigateTo($"notes/{Subject}");
+        }
+        
+    }
+}

@@ -1,0 +1,25 @@
+@using csharpwebsite.Client.Pages.Auth
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                        @if (context.User.Identity.IsAuthenticated)
+                        {
+                            <h1>UNAUTHORIZED</h1>
+                        }
+                        else
+                        {
+                            <Login></Login>
+                        }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

@@ -1,0 +1,47 @@
+@page "/notes/{subject}"
+@attribute [Authorize]
+@inject HttpClient http
+@inject JSLogger logger
+@inject State state
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <div class="d-flex bd-highlight mb-3">
+            <h1 class="display-4 mr-auto">Browsing @Subject notes.</h1>
+            @if((state.User.Instructor || state.User.Admin) && Subject != "all")
+            {
+                <a href="/notes/@Subject/share" class="btn btn-primary my-auto mr-5">Share</a>
+            }
+        </div>
+        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt et dolore magna aliqua.</p>
+    </div>
+</div>
+
+<Forum apiNamespace="notes" models="noteModels">
+    <MiniContent>
+        <div class="card-body">
+            <p class="card-text" style="white-space: pre-wrap;overflow-y: hidden;max-height: 10rem;">@(((NoteModel)context).Content)</p>
+        </div>
+    </MiniContent>
+    <FocusContent>
+        <p class="card-text" style="white-space: pre-wrap;">@(((NoteModel)context).Content)</p>
+    </FocusContent>
+</Forum>
+
+@code {
+    [Parameter]
+    public string Subject { get; set; }
+
+    List<IForumObject> noteModels;
+
+    protected override async Task OnInitializedAsync() {
+        var noteIds = await http.GetJsonAsync<int[]>($"api/notes/{Subject}/{state.User.Grade}");
+        var noteRequestTasks = noteIds.Select(async (id) => 
+        {
+            var x =await http.GetJsonAsync<NoteModel>($"api/notes/{id}");
+            return (IForumObject)x;
+        });
+        noteModels = (await Task.WhenAll(noteRequestTasks)).ToList();
+    }
+
+}

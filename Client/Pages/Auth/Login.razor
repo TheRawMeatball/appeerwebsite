@@ -1,0 +1,73 @@
+﻿@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<div class="row">
+    <div class="col-md">
+        <h3 class="text-center">Heading</h3>
+        <p class="lead">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            Quisque cursus sollicitudin nibh id faucibus.
+            Pellentesque fringilla erat tellus, vel volutpat elit euismod id. 
+            Pellentesque sollicitudin pellentesque lacus vel auctor. 
+            Sed ornare consectetur purus, in auctor erat posuere et. 
+            Curabitur sit amet metus quam. Integer ut sagittis odio. 
+            Phasellus aliquam lacus a ipsum consectetur, ut posuere magna auctor. 
+            Fusce sodales velit lorem, quis bibendum nibh consectetur quis. 
+            Fusce sodales elementum faucibus. 
+            Vivamus consectetur urna a massa sagittis, ut maximus tellus gravida.
+            Pellentesque ultricies purus vel dui porttitor, a rutrum diam porta. 
+            Nulla facilisi. Nulla facilisi.
+        </p>
+    </div>
+    <div class="col-md">
+        <h3 class="text-center">Log In</h3>
+
+        <EditForm Model="@model" OnInvalidSubmit="HandleInvalidSubmit" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator/>
+            
+
+            <div class="form-group">
+                <InputText name="Username" placeholder="Username" id="username" class="form-control" @bind-Value="model.Username"/>
+            </div>
+
+            <div class="form-group">
+                <InputText name="Password" placeholder="Password" id="password" class="form-control" type="password" @bind-Value="model.Password"/>
+            </div>
+
+            @if (!valid || error.Length > 0)
+            {
+                <div class="alert alert-danger">
+                    <ValidationMessage For="(() => model.Username)"/>
+                    <ValidationMessage For="(() => model.Password)"/>
+                    <span>@error</span>
+                </div>
+            }
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+        <p class="mt-2">Need an account?<a href="/register">Signup</a></p>
+    </div>
+</div>
+
+
+@code {
+    private AuthenticateModel model = new AuthenticateModel();
+    bool valid = true;
+
+    string error = "";
+
+    protected void HandleInvalidSubmit() 
+    {
+        valid = false;
+    }
+
+    protected async Task HandleValidSubmit()
+    {
+        valid = true;
+
+        //send request to rest api
+        var result = await AuthService.Login(model);
+
+        error = result.Error ?? "";
+    }
+}

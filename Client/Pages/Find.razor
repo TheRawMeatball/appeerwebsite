@@ -1,0 +1,100 @@
+@page "/find"
+@attribute [Authorize]
+@inject State state
+@inject HttpClient http
+@inject JSLogger logger
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <div class="d-flex bd-highlight mb-3">
+            <h1 class="display-4 mr-auto">Find</h1>       
+        </div>
+        <div class="row ml-2 mr-1">
+            <select @bind="subject" class="form-control col-sm mr-2" @oninput="typeaheadCandidates.Clear">
+                <option>All</option>
+                <option>Math</option>
+                <option>Physics</option>
+                <option>Chemistry</option>
+            </select>
+            <input type="text" list="opt" class="form-control col-sm mr-2" placeholder="Source" @bind="source" @oninput="(e) => HandleTypeahead((string)e.Value)" @onfocus="() => HandleTypeahead(source)">    
+            <datalist id="opt">
+                @foreach (var item in typeaheadCandidates)
+                {
+                    <option value="@item"/>
+                }
+            </datalist>
+            <input type="number" class="form-control col-sm mr-2" placeholder="Page" @bind="page">
+            <input type="submit" class="btn btn-primary" @onclick="FindAsync">
+        </div>
+    </div>
+</div>
+
+@if (questions == null)
+{
+    <h3 class="text-center">Do a search</h3>
+}
+else
+{
+    if (questions.Count == 0)
+    {
+        <h3 class="text-center">No results.</h3>
+    }
+    else
+    {
+        <Forum apiNamespace="questions" models="questions">
+            <MiniContent>
+                <img style="width: 100%;" src="@Src(context)" alt="">
+            </MiniContent>
+            <FocusContent>
+                <img style="width: 100%;" src="@Src(context)" alt="">
+            </FocusContent>
+        </Forum>
+    }
+}
+
+@code {
+    string source = "";
+    int page = 0;
+    Subject subject = Subject.All;
+    List<IForumObject> questions = null;
+    async Task FindAsync()
+    {
+        var res = await http.SendJsonAsync<QuestionModel[]>(HttpMethod.Post, "api/questions/find", new FindModel()
+        {
+            Grade = state.User.Grade,
+            Page = page,
+            Source = source,
+            Subject = subject  
+        });
+
+        questions = res.Select(x => (IForumObject)x).ToList();
+    }
+    private string Src(IForumObject obj)
+    {   
+        return $"api/questions/{obj.Id}/content";
+    }
+
+    Timer timer;
+    void HandleTypeahead(string searchString)
+    {
+        if (timer != null)
+        {
+            timer.Dispose();
+        }
+        if (searchString.Length == 0) 
+        { 
+            typeaheadCandidates.Clear(); 
+            return; 
+        }
+        timer = new Timer(500);
+        timer.AutoReset = false;
+        timer.Elapsed += async (s,e) => 
+        {
+            typeaheadCandidates.Clear();
+            typeaheadCandidates.AddRange(await http.GetJsonAsync<string[]>($"api/questions/sources/{state.User.Grade}/{subject}/{searchString}"));
+            StateHasChanged();
+        };
+        timer.Start();
+    }
+    List<string> typeaheadCandidates = new List<string>();
+}

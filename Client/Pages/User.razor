@@ -1,0 +1,124 @@
+@page "/user/{id:int}"
+@inject HttpClient http
+@inject JSLogger logger
+
+@if (user != null)
+{	
+	<div class="media mb-3" style="height: 5rem;">
+		<img src="@Src" alt="" style="height: 100%;width: auto;" class="mr-2">
+		<h5 class="my-auto">@user.FirstName @user.LastName</h5>
+	</div>
+
+	<div class="bd-example bd-example-tabs">
+		<nav>
+			<div class="nav nav-tabs" id="nav-tab" role="tablist">
+				<a class="nav-item nav-link active" id="nav-notes-tab" data-toggle="tab" href="#nav-notes" role="tab" aria-controls="nav-notes" aria-selected="true">Notes</a>
+				<a class="nav-item nav-link" id="nav-questions-tab" data-toggle="tab" href="#nav-questions" role="tab" aria-controls="nav-questions" aria-selected="false">Questions</a>
+				<!--a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</a-->
+			</div>
+		</nav>
+		<div class="tab-content" id="nav-tabContent">
+			<div class="tab-pane fade pt-3 active show" id="nav-notes" role="tabpanel" aria-labelledby="nav-notes-tab">
+				<Forum apiNamespace="notes" models="notes">
+					<MiniContent>
+						<div class="card-body">
+							<p class="card-text" style="white-space: pre-wrap;overflow-y: hidden;max-height: 10rem;">@(((NoteModel)context).Content)</p>
+						</div>
+					</MiniContent>
+					<FocusContent>
+						<p class="card-text" style="white-space: pre-wrap;">@(((NoteModel)context).Content)</p>
+					</FocusContent>
+				</Forum>
+			</div>
+			<div class="tab-pane fade pt-3" id="nav-questions" role="tabpanel" aria-labelledby="nav-questions-tab">
+				<Forum apiNamespace="questions" models="questions">
+					<MiniContent>
+						<img style="width: 100%;" src="@QSrc(context)" alt="">
+					</MiniContent>
+					<FocusContent>
+						<img style="width: 100%;" src="@QSrc(context)" alt="">
+					</FocusContent>
+				</Forum>
+			</div>
+		</div>
+	</div>
+}
+else 
+{
+	<span>Loading</span>
+}
+
+
+
+@code {
+	[Parameter]
+	public int id { get;set; }
+	UserModel user;
+
+	List<IForumObject> notes 
+	{
+		get
+		{
+			return user.noteModels
+			.Select(x => (IForumObject)new NoteModel() 
+			{
+				Name = x.Name,
+				Content = x.Content,
+				Grade = x.Grade,
+				Id = x.Id,
+				Subject = x.Subject,
+				Author = strippedUser
+			})
+			.ToList();
+		}
+	}
+
+	List<IForumObject> questions
+	{
+		get
+		{
+			return user.questionModels
+			.Select(x => (IForumObject)new QuestionModel() 
+			{
+				Id = x.Id,
+				Grade = x.Grade,
+				Subject = x.Subject,
+				Source = x.Source,
+				Page = x.Page,
+				Author = strippedUser
+			})
+			.ToList();
+		}
+	}
+
+	StrippedUserModel strippedUser 
+	{
+		get
+		{
+			return new StrippedUserModel() 
+			{
+				Id = user.Id,
+				FirstName = user.FirstName,
+				LastName = user.LastName,
+				Username = user.Username,
+				Grade = user.Grade,
+				Admin = user.Admin,
+				Instructor = user.Instructor
+			};
+		}
+	}
+
+	private string QSrc(IForumObject obj)
+    {   
+        return $"api/questions/{obj.Id}/content";
+    }
+
+	protected async override Task OnInitializedAsync()
+	{
+		user = await http.GetJsonAsync<UserModel>($"api/users/{id}");
+		user.noteModels = await http.GetJsonAsync<StrippedNoteModel[]>($"api/users/{id}/notes");
+		user.questionModels = await http.GetJsonAsync<StrippedQuestionModel[]>($"api/users/{id}/questions");
+		logger.log(user);	
+	}
+	string Src { get { return $"api/users/{id}/avatar"; } }
+}

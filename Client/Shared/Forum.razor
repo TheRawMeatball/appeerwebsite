@@ -1,0 +1,93 @@
+@inject State state
+@inject HttpClient http
+@inject JSLogger logger
+
+@if(models != null)
+{
+    <div class="row">
+        @for (int x = 0; x < numCols; x++)
+        {
+            <div class="col-sm">
+                @for (int i = x; i < models.Count; i+=numCols)
+                {
+                    <div class="row">
+                    
+                        <div class="col-sm">
+
+                            <Card Model="@models[i]" ClickCallback="@FocusOnModel">
+                                <CardBody Context="x">
+                                    @MiniContent(x)
+                                </CardBody>
+                            </Card>
+
+                        </div>
+    
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <span>Loading</span>
+}
+
+@if (focusedModel != null)
+{
+    <div class="loading-overlay" @onclick="@((e) => {focusedModel = null;})">
+        <div class="inner">
+            <div class="container" @onclick:stopPropagation>
+                <div class="card card-default">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title" style="margin-bottom: 0px;">@focusedModel.DisplayTitle</h4>
+                            <div>@focusedModel.Author.FirstName @focusedModel.Author.LastName</div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="max-height: 60vh;overflow-y:auto;">
+
+                        @FocusContent(focusedModel)
+
+                        <div class="dropdown-divider"></div>
+                        
+                        <div>
+                            <CommentSection apiNamespace="@apiNamespace" focusedModel="focusedModel" DeleteFocusedModel="RemoveFocusedModel"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string apiNamespace { get; set; }
+
+    [Parameter]
+    public RenderFragment<IForumObject> FocusContent { get; set; }
+
+    [Parameter]
+    public RenderFragment<IForumObject> MiniContent { get; set; }
+    
+    [Parameter]
+    public List<IForumObject> models { get; set; }
+
+    const int numCols = 2;
+    IForumObject focusedModel;
+    
+    void FocusOnModel(IForumObject model) 
+    {
+        focusedModel = model;
+        logger.log(model);
+        StateHasChanged();
+    }
+
+    void RemoveFocusedModel()
+    {
+        models.Remove(focusedModel);
+        focusedModel = null;
+        StateHasChanged();
+    }
+}

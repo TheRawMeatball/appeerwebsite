@@ -1,0 +1,235 @@
+@using System.Globalization
+@inject JSLogger logger
+@inject DateTimeFormatInfo dtfi
+@inject HttpClient http
+    
+<style>
+    .past-month {
+        background-color: hsla(0, 0%, 5%, 50%);
+        color: hsl(0, 0%, 50%);
+    }
+    .past {
+        background-color: hsla(0, 0%, 5%, 50%);
+        color: hsl(0, 0%, 70%);
+    }
+    .today {
+        background-color: hsla(190, 70%, 50%, 50%);
+    }
+    .next-month {
+        background-color: hsla(0, 0%, 10%, 30%);
+        color: hsl(0, 0%, 70%);
+    }
+</style>
+
+<div class="row bg-primary" style="height: 2rem;">
+    <div class="col text-left noselect" style="cursor: pointer;" @onclick="async () => await ChangeActiveMonth(false)">
+        @dtfi.GetMonthName(activeMonth.AddMonths(-1).Month) @if (activeMonth.AddMonths(-1).Year != now.Year) { <span>(@activeMonth.AddMonths(-1).Year)</span> }
+    </div>
+    <div class="col text-center noselect" style="cursor: default;">
+        @dtfi.GetMonthName(activeMonth.Month) @if (activeMonth.Year != now.Year) { <span>(@activeMonth.Year)</span> }
+    </div>
+    <div class="col text-right noselect" style="cursor: pointer;" @onclick="async () => await ChangeActiveMonth(true)">
+        @dtfi.GetMonthName(activeMonth.AddMonths(1).Month) @if (activeMonth.AddMonths(1).Year != now.Year) { <span>(@activeMonth.AddMonths(1).Year)</span> }
+    </div>
+</div>
+
+<div class="row bg-dark" style="height: 2rem;">  
+    @for (int i = 0; i < 7; i++)
+    {
+        <div class="col text-center noselect px-0">
+            @dtfi.AbbreviatedDayNames[(i + 1) % 7]
+        </div>
+    }
+</div>
+
+@for (int w = 0; w < 6; w++)
+{
+    <div class="row bg-secondary" style="height: 3.2rem;">
+        @for (int d = 0; d < 7; d++)
+        {
+            var date = DateFromWD(w, d); 
+            <div class="col text-center noselect @DayColor(date) px-0" style="cursor: default;" @onmousedown="() => Click(date)" @onmouseup="() => Release()" @onpointerover="() => Hover(date)">@date.Day</div>
+        }
+    </div>
+}
+
+@code
+{
+    DateTime now;
+    DateTime activeMonth;
+    
+    [Parameter]
+    public Action<DateTime, DateTime> DateSetCallback { get; set; }
+
+    [Parameter]
+    public bool SupportMultipleDates { get; set; } = true;
+
+    int weekOffset;
+
+    protected override void OnInitialized()
+    {
+        now = DateTime.Now.Date;
+        activeMonth = new DateTime(now.Year, now.Month, 1);
+
+        (date1, date2) = (now, now);
+
+        weekOffset = mod((int)activeMonth.DayOfWeek - 1, 7);
+    }
+
+    int mod(int k, int n) => ((k %= n) < 0) ? k+n : k;
+
+    DateTime DateFromWD(int w, int d) => activeMonth.AddDays(7*w + d - weekOffset);
+
+    string DayColor(DateTime dt)
+    {
+        if (dt < now) //past
+        {
+            if (dt < activeMonth || dt > activeMonth.AddMonths(1).AddDays(-1))
+            {
+                return "past-month";   
+            }
+            return "past";
+        }
+
+        if ((date1 >= dt && dt >= date2) || (date2 >= dt && dt >= date1))
+        {
+            return "bg-primary";
+        }
+
+        if (dt == now)
+        {
+            return "today";
+        }
+        else //future
+        {
+            if (dt < activeMonth || dt > activeMonth.AddMonths(1).AddDays(-1))
+            {
+                return "next-month";
+            }
+        }
+
+        return "";
+    }
+
+    DateTime date1;
+    DateTime date2;
+
+    bool selecting;
+
+    void Hover (DateTime date)
+    {
+        if(selecting)
+        {
+            date2 = date > now ? date : now;
+
+            var dateDiff = (date2 - date1);
+            var dateDiffAbs = dateDiff.Duration();
+    
+            if(dateDiffAbs >= TimeSpan.FromDays(DateTime.DaysInMonth(activeMonth.Year, activeMonth.Month) - 1))
+            {
+                if (dateDiff == dateDiffAbs)
+                {
+                    date2 = date1.AddDays(DateTime.DaysInMonth(activeMonth.Year, activeMonth.Month) - 1);
+                }
+                else
+                {
+                    date2 = date1.AddDays(-DateTime.DaysInMonth(activeMonth.Year, activeMonth.Month) + 1);
+                }
+            }
+        }
+    }
+
+    void Click (DateTime date)
+    {
+        if (selecting == true)
+        {
+            selecting = false;
+            DateSetCallback(date1, date2);
+            return;
+        }
+
+        selecting = true;
+
+        bool future = date > now;
+        date1 = future ? date : now;
+        date2 = future ? date : now;
+
+        if (!SupportMultipleDates)
+        {
+            selecting = false;
+            DateSetCallback(date1, date2);
+        }
+    }
+
+    void Release ()
+    {
+        if (SupportMultipleDates) {
+            selecting = false;
+            DateSetCallback(date1, date2);
+        }
+    }
+
+    [Parameter]
+    public Dictionary<DateTime, SessionModel[]> Sessions { get; set; }
+
+
+    [Parameter]
+    public SessionFinderModel FinderModel { get; set; }
+
+    async Task ChangeActiveMonth(bool nextMonth)
+    {
+        activeMonth = activeMonth.AddMonths(nextMonth ? 1 : -1);
+        weekOffset = mod((int)activeMonth.DayOfWeek - 1, 7);
+        await UpdateSessionDictionary();
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await UpdateSessionDictionary();
+    }
+
+    public async Task UpdateSessionDictionary()
+    {
+        var newData = false;
+
+        if (!Sessions.ContainsKey(activeMonth))
+        {
+            var fm = FinderModel;
+            fm.Start = activeMonth;
+            fm.End = activeMonth.AddMonths(1);
+            
+            var x = await http.PostJsonAsync<SessionModel[]>("api/session/availablesessions" , fm);
+
+            Sessions.Add(activeMonth, x);
+
+            if (activeMonth.Month == date1.Month || activeMonth.Month == date2.Month)
+            {
+                newData = true;  
+            }
+        }
+
+        if (!Sessions.ContainsKey(activeMonth.AddMonths(1)))
+        {
+            var fm = FinderModel;
+            fm.Start = activeMonth.AddMonths(1);
+            fm.End = activeMonth.AddMonths(2);
+            
+            var x = await http.PostJsonAsync<SessionModel[]>("api/session/availablesessions" , fm);
+            
+            Sessions.Add(activeMonth.AddMonths(1), x);
+
+            if (newData != true && (activeMonth.Month == date1.Month || activeMonth.Month == date2.Month))
+            {
+                newData = true;
+            }
+        }
+
+        if (newData)
+        {
+            DateSetCallback(date1, date2);    
+        }
+
+        logger.log(Sessions.Select(x => new { Key = x.Key, Value = x.Value }).ToArray());
+        StateHasChanged();
+    }
+}

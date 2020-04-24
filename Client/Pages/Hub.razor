@@ -1,0 +1,32 @@
+@page "/{route}"
+@attribute [Authorize]
+
+<div class="row">
+    <div class="col-sm-4">
+        <div class="ratio" style="background-image:url('imgs/math.webp')" >
+            <div class="text-center subject-button-div">
+                <a href="@route/math" class="subject-button btn">Math</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="ratio" style="background-image:url('imgs/physics.webp')" >
+            <div class="text-center subject-button-div">
+                <a href="@route/physics" class="subject-button btn">Physics</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="ratio" style="background-image:url('imgs/chemistry.webp')" >
+            <div class="text-center subject-button-div">
+                <a href="@route/chemistry" class="subject-button btn">Chemistry</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public string route { get; set; }
+}
