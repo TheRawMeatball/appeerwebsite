@@ -4,5 +4,14 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"sqltools.connections": [
+			{
+				"database": "${workspaceFolder:appeerwebsite}/Server/LocalDatabase.db",
+				"dialect": "SQLite",
+				"name": "AppeerDevDB"
+			}
+		],
+		"sqltools.useNodeRuntime": true
+	}
 }
