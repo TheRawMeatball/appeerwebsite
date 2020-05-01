@@ -1,0 +1,1 @@
+dotnet run /ConnectionStrings:WebApiDatabase="Data Source=NewDb.db"

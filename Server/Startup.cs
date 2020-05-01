@@ -38,7 +38,15 @@ namespace csharpwebsite.Server
             services.AddControllersWithViews();
 
             // use sqlite db
-            services.AddDbContext<DataContext, SqliteDataContext>();
+            if (_env.IsDevelopment())
+            {
+                services.AddDbContext<DataContext, SqliteDataContext>();
+            }
+            else
+            {
+                services.AddDbContext<DataContext, DataContext>();
+            }
+
 
             services.AddCors();
             services.AddControllers()

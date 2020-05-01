@@ -1,6 +1,8 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using csharpwebsite.Server.Entities;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace csharpwebsite.Server.Helpers
 {
@@ -16,7 +18,10 @@ namespace csharpwebsite.Server.Helpers
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             // connect to sql server database
-            options.UseSqlServer(Configuration.GetConnectionString("WebApiDatabase"));
+            options.UseMySql(Configuration.GetConnectionString("WebApiDatabase"), mySqlOptions => mySqlOptions
+                    // replace with your Server Version and Type
+                    .ServerVersion(new Version(10 , 4), ServerType.MariaDb)
+            );
         }
 
         public DbSet<User> Users { get; set; }
