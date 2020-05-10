@@ -33,8 +33,9 @@ namespace csharpwebsite.Server.Services
         {
             var session = await _context.SessionSlots
             .Where(x => x.Id == id)
-            .Where(x => x.Attendees.Find(a => a.AttendeeId == id) == null)
+            .Where(x => x.HostId != userId)
             .Where(x => x.Attendees.Count < x.MaxAttendees)
+            .Where(x => x.Attendees.Find(a => a.AttendeeId == userId) == null)
             .FirstOrDefaultAsync();
 
             _ = session ?? throw new AppException("Session not found or already full.");

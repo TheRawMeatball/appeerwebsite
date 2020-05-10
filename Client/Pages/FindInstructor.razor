@@ -48,8 +48,24 @@
             </div>
             
             <div class="col">
-               <h1>HOSETED BY</h1>
-               <h1>NAME</h1>
+                @if (SelectedSession != null)
+                {
+                    <h5>Hosted by: @SelectedSession.Host.FullName</h5>
+                    <h6>Subjects: @Timeline.SubjectInterpreter(SelectedSession.Subjects)</h6>
+                    <p>@SelectedSession.Description</p>
+
+                    <div class="dropdown-divider"></div>
+
+                    <h5>Attendants:</h5>
+                    foreach (var item in SelectedSession.Attendees)
+                    {
+                        <h6>@item.FullName</h6>
+                    }
+                }
+                else
+                {
+                   <h5>No Session Selected</h5>
+                }               
             </div>
         </div>
         <div class="row">
@@ -59,7 +75,7 @@
             @{
                 //var disabled = model.Subjects == 0 || overlap ? "disabled" : "";
             }
-            <button class="btn btn-primary col mx-3" @onclick="() => logger.log(1)"> Host Session </button>
+            <button class="btn btn-primary col mx-3" @onclick="() => logger.log(1)">Attend</button>
         </div>
         
     </div>
@@ -68,7 +84,7 @@
     </div>
 </div>
 
-<Timeline SubjectFilter="subjectFilter" Sessions="sessionsOnDate"/>
+<Timeline SubjectFilter="subjectFilter" Sessions="sessionsOnDate" @bind-SelectedSession="SelectedSession"/>
 
 @code
 {
@@ -87,6 +103,8 @@
     ushort subjectFilter = ushort.MaxValue;
 
     SessionModel[] sessionsOnDate = new SessionModel[0];
+
+    SessionModel SelectedSession;
 
     void DigestSubjectsArray()
     {
@@ -118,5 +136,4 @@
 
         StateHasChanged(); 
     }
-
 }

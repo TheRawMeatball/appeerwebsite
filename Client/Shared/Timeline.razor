@@ -4,6 +4,11 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime jsRuntime
 
+@{
+    bool preserveSelection = false;
+}
+
+
 <div class="row mt-3">
     <div class="col px-0" style="height: 2rem;">
         <div class="schedule" style="z-index:0;position:absolute;width:100%;height:2rem;top:0;">
@@ -50,8 +55,6 @@
         SortedSessions = SortedSessions
         .Where(x => x.Value.Length > 0)
         .ToDictionary(x => x.Key, x => x.Value);
-
-        logger.log(SortedSessions.Values.ToArray());
     }
 
     <div class="col bg-dark px-0" style="min-height:5rem;height: @(2.25*(SortedSessions.Count + (CreatedSession == null ? 0 : 1)))rem;">
@@ -99,7 +102,17 @@
                             var bl = i != 0 && group.Value[i - 1].End == item.Start ? "2px solid black" : "0px";
                             var br = i != group.Value.Length - 1 && group.Value[i + 1].Start == item.End ? "2px solid black" : "0px";
 
-                            <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: #323 ;float: left; border-left: @bl; border-right: @br;" data-toggle="tooltip" data-placement="right" title="@SubjectInterpreter(item.Subjects)"></div>
+                            var session = item;
+
+                            var color = "#323";
+                            if (item == SelectedSession)
+                            {
+                                color = "#226";
+                                preserveSelection = true;
+                            }
+
+                            <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @color ;float: left; border-left: @bl; border-right: @br;" data-toggle="tooltip" data-placement="right" 
+                                 title="@SubjectInterpreter(item.Subjects)" @onclick="async () => {SelectedSession = item; await SelectedSessionChanged.InvokeAsync(item);}"></div>
                             i++;
                         }
                     }
@@ -118,6 +131,12 @@
     </div>
 </div>
 
+@if (!preserveSelection && SelectedSession != null)
+{
+    SelectedSession = null;
+    SelectedSessionChanged.InvokeAsync(null);
+}
+
 @code
 {
     [Parameter]
@@ -129,6 +148,11 @@
     public bool Overlap { get; set; }
 
     [Parameter]
+    public SessionModel SelectedSession { get; set; }
+    [Parameter]
+    public EventCallback<SessionModel> SelectedSessionChanged { get; set; }
+
+    [Parameter]
     public ushort SubjectFilter { get; set; } = ushort.MaxValue;
 
     protected override void OnAfterRender(bool firstRender)
@@ -136,7 +160,7 @@
         ((IJSInProcessRuntime)jsRuntime).InvokeVoid("tooltip", null);
     }
 
-    string SubjectInterpreter(ushort x)
+    public static string SubjectInterpreter(ushort x)
     {
         var s = "";
         for (int i = 0; i < 16; i++)
