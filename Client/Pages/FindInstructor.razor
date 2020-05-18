@@ -56,7 +56,7 @@
 
                     <div class="dropdown-divider"></div>
 
-                    <h5>Attendants:</h5>
+                    <h5>Attendants (@SelectedSession.Attendees.Count / @SelectedSession.MaxAttendees)</h5>
                     foreach (var item in SelectedSession.Attendees)
                     {
                         <h6>@item.FullName</h6>
@@ -73,9 +73,23 @@
         </div>
         <div class="row my-2">
             @{
-                //var disabled = model.Subjects == 0 || overlap ? "disabled" : "";
+                var b = SelectedSession?.Attendees.Any(x => x.Id == state.User.Id);
+                if (b == null)
+                {
+                    <button class="btn btn-primary col mx-3 disabled">Attend</button>
+                }
+                else
+                {
+                    if (b.Value)
+                    {
+                        <button class="btn btn-primary col mx-3" @onclick="Leave">Leave</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary col mx-3" @onclick="Attend">Attend</button>
+                    }
+                }
             }
-            <button class="btn btn-primary col mx-3" @onclick="() => logger.log(1)">Attend</button>
         </div>
         
     </div>
@@ -84,7 +98,7 @@
     </div>
 </div>
 
-<Timeline SubjectFilter="subjectFilter" Sessions="sessionsOnDate" @bind-SelectedSession="SelectedSession"/>
+<Timeline SubjectFilter="subjectFilter" Sessions="sessionsOnDate" @bind-SelectedSession="SelectedSession" ShowSelfSessions="false"/>
 
 @code
 {
@@ -135,5 +149,38 @@
         .ToArray();
 
         StateHasChanged(); 
+    }
+
+    async Task Attend()
+    {
+        Error error = null;
+        try
+        {
+            error = await http.PostJsonAsync<Error>($"api/session/{SelectedSession.Id}/attend", null);
+            SelectedSession.Attendees.Add(new StrippedUserModel 
+            {
+                FirstName = state.User.FirstName,
+                LastName = state.User.LastName,
+                Id = state.User.Id,
+            });
+        }
+        catch (HttpRequestException)
+        {
+            logger.log(error?.message);
+        }
+    }
+
+    async Task Leave()
+    {
+        Error error = null;
+        try
+        {
+            error = await http.PostJsonAsync<Error>($"api/session/{SelectedSession.Id}/leave", null);
+            SelectedSession.Attendees.RemoveAt(SelectedSession.Attendees.Count - 1);
+        }
+        catch (HttpRequestException)
+        {
+            logger.log(error?.message);
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace csharpwebsite.Server.Services
     public interface ISessionService
     {
         Task Delete(int id, int userId);
-        Task<Session[]> GetSessions(SessionFinderModel finder);
+        Task<Session[]> GetSessions(SessionFinderModel finder, int userId);
         Task HostSession(Session sessionToHost);
         Task Leave(int id, int userId);
         Task Attend(int id, int userId);
@@ -32,10 +32,11 @@ namespace csharpwebsite.Server.Services
         public async Task Attend(int id, int userId)
         {
             var session = await _context.SessionSlots
+            .Include(x => x.Attendees)
             .Where(x => x.Id == id)
             .Where(x => x.HostId != userId)
             .Where(x => x.Attendees.Count < x.MaxAttendees)
-            .Where(x => x.Attendees.Find(a => a.AttendeeId == userId) == null)
+            .Where(x => x.Attendees.All(a => a.AttendeeId != userId))
             .FirstOrDefaultAsync();
 
             _ = session ?? throw new AppException("Session not found or already full.");
@@ -58,14 +59,14 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Session[]> GetSessions(SessionFinderModel finder)
+        public async Task<Session[]> GetSessions(SessionFinderModel finder, int userId)
         {
             if (finder.End - finder.Start < TimeSpan.FromDays(32))
             {
                 return await _context.SessionSlots
                 .Where(x => x.Start > finder.Start)
                 .Where(x => x.End < finder.End)
-                .Where(x => (x.Attendees.Count < x.MaxAttendees) || finder.GetBooked)
+                .Where(x => (x.Attendees.Count < x.MaxAttendees) || finder.GetBooked || x.Attendees.Any(a => a.AttendeeId == userId))
                 .Where(x => (x.Subjects & finder.Subjects) > 0)
                 .Where(x => x.HostId == finder.HostId || finder.HostId == null)
                 .Where(x => x.Grade == finder.Grade)
@@ -113,15 +114,16 @@ namespace csharpwebsite.Server.Services
 
         public async Task Leave(int id, int userId)
         {
-            var a = await _context.SessionSlots
+            var session = await _context.SessionSlots
+            .Include(x => x.Attendees)
             .Where(x => x.Id == id)
-            .Select(x => new { sa = x.Attendees.Find(a => a.AttendeeId == userId), session = x })
             .FirstOrDefaultAsync();
 
-            var session = a.session;
-            var attendance = a.sa;
-
             _ = session ?? throw new AppException("Session not found.");
+
+            var attendance = session.Attendees
+            .Find(x => x.AttendeeId == userId);
+
             _ = attendance ?? throw new AppException("Session not attended by you.");
 
             session.Attendees.Remove(attendance);

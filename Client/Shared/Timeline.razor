@@ -6,6 +6,7 @@
 
 @{
     bool preserveSelection = false;
+    bool startOverlap = Overlap;
 }
 
 
@@ -46,6 +47,7 @@
             x => x.Key,
             x => x
             .Where(a => (a.Subjects & SubjectFilter) > 0)
+            .Where(a => a.Host.Id != state.User.Id || ShowSelfSessions)
             .OrderBy(
                 a => a.Start
             )
@@ -80,9 +82,10 @@
                 {
                     s = "#a23a";
                     Overlap = true;
+
                 }
 
-                <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @s"></div>
+                <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @s" @onclick="async () => {SelectedSession = null; await SelectedSessionChanged.InvokeAsync(SelectedSession);}"></div>
             }
             @foreach (var group in SortedSessions)
             {
@@ -134,7 +137,12 @@
 @if (!preserveSelection && SelectedSession != null)
 {
     SelectedSession = null;
-    SelectedSessionChanged.InvokeAsync(null);
+    SelectedSessionChanged.InvokeAsync(SelectedSession);   
+}
+
+@if (startOverlap ^ Overlap)
+{
+    OverlapChanged.InvokeAsync(Overlap);
 }
 
 @code
@@ -153,7 +161,13 @@
     public EventCallback<SessionModel> SelectedSessionChanged { get; set; }
 
     [Parameter]
+    public EventCallback<bool> OverlapChanged { get; set; }
+
+    [Parameter]
     public ushort SubjectFilter { get; set; } = ushort.MaxValue;
+
+    [Parameter]
+    public bool ShowSelfSessions { get; set; } = true;
 
     protected override void OnAfterRender(bool firstRender)
     {

@@ -41,7 +41,7 @@ namespace csharpwebsite.Server.Controllers
             try
             {
                 await _sessionService.Attend(id, userId);
-                return Ok();
+                return Ok(new { message = "" });
             }
             catch (AppException ex)
             {
@@ -55,7 +55,7 @@ namespace csharpwebsite.Server.Controllers
             try
             {
                 await _sessionService.Leave(id, userId);
-                return Ok();
+                return Ok(new { message = "" });
             }
             catch (AppException ex)
             {
@@ -86,7 +86,7 @@ namespace csharpwebsite.Server.Controllers
         {
             try
             {
-                Session[] sessions = await _sessionService.GetSessions(finder);
+                Session[] sessions = await _sessionService.GetSessions(finder, userId);
                 var sessionModels = _mapper.Map<SessionModel[]>(sessions);
                 return Ok(sessionModels);
             }

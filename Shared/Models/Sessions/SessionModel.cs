@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using csharpwebsite.Shared.Models.Users;
 
 namespace csharpwebsite.Shared.Models.Sessions
@@ -7,7 +8,7 @@ namespace csharpwebsite.Shared.Models.Sessions
     {
         public int Id { get; set; }
         public StrippedUserModel Host { get; set; }
-        public StrippedUserModel[] Attendees { get; set; }
+        public List<StrippedUserModel> Attendees { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public ushort Subjects { get; set; }

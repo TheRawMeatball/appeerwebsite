@@ -1,5 +1,6 @@
 @page "/instruct"
 @attribute [Authorize(Roles = "Admin, Instructor")]
+@using System.Collections
 @inject JSLogger logger
 @inject HttpClient http
 @inject State state
@@ -48,20 +49,38 @@
             </div>
             
             <div class="col">
-                <div class="form-group">
-                    <label for="maxattn">Max Attendees</label>
-                    <input type="number" min="1" class="form-control" id="maxattn" @bind="model.MaxAttendees">
-                </div>
+                 @if (SelectedSession != null)
+                {
+                    <h5>Hosted by: @SelectedSession.Host.FullName</h5>
+                    <h6>Subjects: @Timeline.SubjectInterpreter(SelectedSession.Subjects)</h6>
+                    <p>@SelectedSession.Description</p>
 
-                <div class="form-group">
-                    <label for="time-start">Start Time</label>
-                    <input type="time" class="form-control" id="time-start" @bind="sessionStartProxy">
-                </div>
+                    <div class="dropdown-divider"></div>
 
-                <div class="form-group">
-                    <label for="slot-duration">Slot Duration</label>
-                    <input type="time" max="08:00" class="form-control" id="slot-duration" @bind="sessionDurationProxy">
-                </div>
+                    <h5>Attendants:</h5>
+                    foreach (var item in SelectedSession.Attendees)
+                    {
+                        <h6>@item.FullName</h6>
+                    }
+                }
+                else
+                {
+                    
+                    <div class="form-group">
+                        <label for="maxattn">Max Attendees</label>
+                        <input type="number" min="1" class="form-control" id="maxattn" @bind="model.MaxAttendees">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time-start">Start Time</label>
+                        <input type="time" class="form-control" id="time-start" @bind="sessionStartProxy">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slot-duration">Slot Duration</label>
+                        <input type="time" max="08:00" class="form-control" id="slot-duration" @bind="sessionDurationProxy">
+                    </div>
+                }
             </div>
         </div>
         <div class="row">
@@ -80,12 +99,14 @@
     </div>
 </div>
 
-<Timeline Sessions="sessionsOnDate" CreatedSession="model" Overlap="overlap"/>
+<Timeline Sessions="sessionsOnDate" CreatedSession="model" @bind-Overlap="overlap" SelectedSession="SelectedSession" SelectedSessionChanged="@(newSelection => {SelectedSession = newSelection; UpdateSessionSelections();})"/>
 
 @code
 {
     DateTime selectedDate = DateTime.Now.Date;
     Dictionary<DateTime, SessionModel[]> Sessions = new Dictionary<DateTime, SessionModel[]>();
+
+    SessionModel SelectedSession;
 
     TimeSpan sessionStart = new TimeSpan(12,0,0);
     DateTime sessionStartProxy { get => DateTime.Now.Date + sessionStart; set { sessionStart = value.TimeOfDay; DigestStartAndDuration(); }}
@@ -101,6 +122,11 @@
     }
 
     bool overlap = false;
+
+    void UpdateSessionSelections()
+    {
+        subjects = new BitArray(new int[] { SelectedSession?.Subjects ?? model.Subjects }).Cast<bool>().ToArray();
+    }
 
     void DigestStartAndDuration()
     {
@@ -145,9 +171,9 @@
     {
         finderModel = new SessionFinderModel 
         {
-            HostId = null,
+            HostId = state.User.Id,
             Subjects = ushort.MaxValue,
-            GetBooked = false,
+            GetBooked = true,
             Grade = state.User.Grade,
         };
 
