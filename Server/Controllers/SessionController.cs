@@ -54,7 +54,7 @@ namespace csharpwebsite.Server.Controllers
         {
             try
             {
-                await _sessionService.Leave(id, userId);
+                await _sessionService.RemoveUserFromSession(id, userId);
                 return Ok(new { message = "" });
             }
             catch (AppException ex)
@@ -111,6 +111,25 @@ namespace csharpwebsite.Server.Controllers
             }
         }
 
+        [HttpPost("{sessionId}/kick/{userIdToKick}")]
+        [Authorize(Roles = "Admin, Instructor")]
+        public async Task<IActionResult> Kick(int sessionId, int userIdToKick)
+        {
+            if (!User.IsInRole("Admin") && (await _sessionService.GetSessionById(sessionId)).HostId == userId)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                await _sessionService.RemoveUserFromSession(sessionId, userIdToKick);
+                return Ok(new { message = "" });
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 
 }

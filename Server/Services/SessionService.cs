@@ -16,8 +16,9 @@ namespace csharpwebsite.Server.Services
         Task Delete(int id, int userId);
         Task<Session[]> GetSessions(SessionFinderModel finder, int userId);
         Task HostSession(Session sessionToHost);
-        Task Leave(int id, int userId);
+        Task RemoveUserFromSession(int id, int userId);
         Task Attend(int id, int userId);
+        Task<Session> GetSessionById(int sessionId);
     }
 
     public class SessionService : ISessionService
@@ -112,11 +113,11 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Leave(int id, int userId)
+        public async Task RemoveUserFromSession(int sessionId, int userId)
         {
             var session = await _context.SessionSlots
             .Include(x => x.Attendees)
-            .Where(x => x.Id == id)
+            .Where(x => x.Id == sessionId)
             .FirstOrDefaultAsync();
 
             _ = session ?? throw new AppException("Session not found.");
@@ -124,11 +125,23 @@ namespace csharpwebsite.Server.Services
             var attendance = session.Attendees
             .Find(x => x.AttendeeId == userId);
 
-            _ = attendance ?? throw new AppException("Session not attended by you.");
+            _ = attendance ?? throw new AppException("Session not attended by user.");
 
             session.Attendees.Remove(attendance);
             _context.SessionSlots.Update(session);
             await _context.SaveChangesAsync();
         }
+    
+        public Task<Session> GetSessionById(int sessionId)
+        {
+            return _context.SessionSlots
+            .Where(x => x.Id == sessionId)
+            .FirstOrDefaultAsync();
+        }
+
+        /*public async Task Update()
+        {
+            
+        }*/
     }
 }
