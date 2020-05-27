@@ -13,12 +13,13 @@ namespace csharpwebsite.Server.Services
 {
     public interface ISessionService
     {
-        Task Delete(int id, int userId);
-        Task<Session[]> GetSessions(SessionFinderModel finder, int userId);
+        Task Delete(Guid id, Guid userId);
+        Task<Session[]> GetSessions(SessionFinderModel finder, Guid userId);
         Task HostSession(Session sessionToHost);
-        Task RemoveUserFromSession(int id, int userId);
-        Task Attend(int id, int userId);
-        Task<Session> GetSessionById(int sessionId);
+        Task RemoveUserFromSession(Guid id, Guid userId);
+        Task Attend(Guid id, Guid userId);
+        Task<Session> GetSessionById(Guid sessionId);
+        Task ChangeSession(Guid sessionId, UpdateSessionModel model);
     }
 
     public class SessionService : ISessionService
@@ -30,7 +31,7 @@ namespace csharpwebsite.Server.Services
             _context = context;
         }
 
-        public async Task Attend(int id, int userId)
+        public async Task Attend(Guid id, Guid userId)
         {
             var session = await _context.SessionSlots
             .Include(x => x.Attendees)
@@ -47,11 +48,11 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(int id, int userId)
+        public async Task Delete(Guid id, Guid userId)
         {
             var session = await _context.SessionSlots
             .Where(x => x.Id == id)
-            .Where(x => x.HostId == userId || userId < 0)
+            .Where(x => x.HostId == userId || userId != Guid.Empty)
             .FirstOrDefaultAsync();
 
             _ = session ?? throw new AppException("Session not found or unauthorized.");
@@ -60,7 +61,7 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Session[]> GetSessions(SessionFinderModel finder, int userId)
+        public async Task<Session[]> GetSessions(SessionFinderModel finder, Guid userId)
         {
             if (finder.End - finder.Start < TimeSpan.FromDays(32))
             {
@@ -113,7 +114,7 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task RemoveUserFromSession(int sessionId, int userId)
+        public async Task RemoveUserFromSession(Guid sessionId, Guid userId)
         {
             var session = await _context.SessionSlots
             .Include(x => x.Attendees)
@@ -132,16 +133,25 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
     
-        public Task<Session> GetSessionById(int sessionId)
+        public Task<Session> GetSessionById(Guid sessionId)
         {
             return _context.SessionSlots
             .Where(x => x.Id == sessionId)
             .FirstOrDefaultAsync();
         }
 
-        /*public async Task Update()
+        public async Task ChangeSession(Guid sessionId, UpdateSessionModel model)
         {
+            var session = await _context.SessionSlots.FirstOrDefaultAsync(x => x.Id == sessionId);
+
+            session.Start        = model.Start        ?? session.Start;
+            session.End          = model.End          ?? session.End;
+            session.Subjects     = model.Subjects     ?? session.Subjects;
+            session.MaxAttendees = model.MaxAttendees ?? session.MaxAttendees;
+            session.Description  = model.Description  ?? session.Description; 
             
-        }*/
+            _context.SessionSlots.Update(session);
+            await _context.SaveChangesAsync();
+        }
     }
 }

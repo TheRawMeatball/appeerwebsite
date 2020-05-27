@@ -11,46 +11,46 @@
             <div class="col">
                 <h5>Set Session Lessons</h5>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c0" @bind="subjects[0]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c0" @bind="subjects[0]">
                     <label class="form-check-label" for="c0">Math</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c1" @bind="subjects[1]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c1" @bind="subjects[1]">
                     <label class="form-check-label" for="c1">Physics</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c2" @bind="subjects[2]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c2" @bind="subjects[2]">
                     <label class="form-check-label" for="c2">Chemistry</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c3" @bind="subjects[3]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c3" @bind="subjects[3]">
                     <label class="form-check-label" for="c3">Biology</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c4" @bind="subjects[4]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c4" @bind="subjects[4]">
                     <label class="form-check-label" for="c4">Literature</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c5" @bind="subjects[5]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c5" @bind="subjects[5]">
                     <label class="form-check-label" for="c5">History</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c6" @bind="subjects[6]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c6" @bind="subjects[6]">
                     <label class="form-check-label" for="c6">Philosophy</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c7" @bind="subjects[7]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()">
+                    <input type="checkbox" class="form-check-input" id="c7" @bind="subjects[7]">
                     <label class="form-check-label" for="c7">English</label>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="c8" @bind="subjects[8]" @bind:event="oninput" @onchange="() => DigestSubjectsArray()"> <!--Also reserve 9,10 for 8 diff 2nd lang-->
+                    <input type="checkbox" class="form-check-input" id="c8" @bind="subjects[8]"> <!--Also reserve 9,10 for 8 diff 2nd lang-->
                     <label class="form-check-label" for="c8">2nd Language</label>
                 </div>
-            </div>
-            
-            <div class="col">
-                 @if (SelectedSession != null)
-                {
+            </div>       
+
+            @if (SelectedSession != null)
+            {
+                <div class="col"> 
                     <h5>Hosted by: @SelectedSession.Host.FullName</h5>
                     <h6>Subjects: @Timeline.SubjectInterpreter(SelectedSession.Subjects)</h6>
                     <p>@SelectedSession.Description</p>
@@ -58,39 +58,52 @@
                     <div class="dropdown-divider"></div>
 
                     <h5>Attendants:</h5>
-                    foreach (var item in SelectedSession.Attendees)
+                    @foreach (var item in SelectedSession.Attendees)
                     {
-                        <h6>@item.FullName</h6>
+                        var i = item.Id;
+                        <h6>@item.FullName (<a class="text-info" @onclick="async () => await Kick(i)">Kick</a>)</h6>
                     }
-                }
-                else
-                {
-                    
-                    <div class="form-group">
-                        <label for="maxattn">Max Attendees</label>
-                        <input type="number" min="1" class="form-control" id="maxattn" @bind="model.MaxAttendees">
-                    </div>
+                </div>
+            }
 
-                    <div class="form-group">
-                        <label for="time-start">Start Time</label>
-                        <input type="time" class="form-control" id="time-start" @bind="sessionStartProxy">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="slot-duration">Slot Duration</label>
-                        <input type="time" max="08:00" class="form-control" id="slot-duration" @bind="sessionDurationProxy">
-                    </div>
-                }
+            <div class="col">  
+                <div class="form-group">
+                    <label for="maxattn">Max Attendees</label>
+                    <input type="number" min="1" class="form-control" id="maxattn" @bind="model.MaxAttendees">
+                </div>
+                <div class="form-group">
+                    <label for="time-start">Start Time</label>
+                    <input type="time" class="form-control" id="time-start" @bind="sessionStartProxy">
+                </div>
+                <div class="form-group">
+                    <label for="slot-duration">Slot Duration</label>
+                    <input type="time" max="08:00" class="form-control" id="slot-duration" @bind="sessionDurationProxy">
+                </div>
             </div>
+
         </div>
         <div class="row">
-            <textarea @bind="model.Description" placeholder="Write a description" class="form-control col mx-3"></textarea>
+            <textarea @bind="DescriptionProxy" @bind:event="oninput" placeholder="Write a description" class="form-control col mx-3 my-2"></textarea>
         </div>
         <div class="row my-2">
-            @{
+            @if (SelectedSession == null)
+            {
                 var disabled = model.Subjects == 0 || overlap ? "disabled" : "";
+                <button class="btn btn-primary col mx-3 @disabled" disabled="@(disabled.Count()>0)" @onclick="async () => await Host()"> Host Session </button>
             }
-            <button class="btn btn-primary col mx-3 @disabled" @onclick="async () => _ = disabled.Length == 0 ? await Host() : 0"> Host Session </button>
+            else
+            {
+                var disabled = updateModel.Description != originalSelectedSession.Description ||
+                               updateModel.Start != originalSelectedSession.Start ||
+                               updateModel.End != originalSelectedSession.End ||
+                               updateModel.MaxAttendees != originalSelectedSession.MaxAttendees ||
+                               updateModel.Subjects != originalSelectedSession.Subjects ? "" : "disabled";
+
+                logger.log(updateModel);
+                logger.log(originalSelectedSession);
+
+                <button class="btn btn-primary col mx-3 @disabled" disabled="@(disabled.Count()>0)" @onclick="async () => await Update()"> Update </button>
+            }
         </div>
         
     </div>
@@ -99,14 +112,65 @@
     </div>
 </div>
 
-<Timeline Sessions="sessionsOnDate" CreatedSession="model" @bind-Overlap="overlap" SelectedSession="SelectedSession" SelectedSessionChanged="@(newSelection => {SelectedSession = newSelection; UpdateSessionSelections();})"/>
+<Timeline Sessions="sessionsOnDate" CreatedSession="model" @bind-Overlap="overlap" SelectedSession="SelectedSession" SelectedSessionChanged="(newSelection => SelectedSession = newSelection)"/>
 
 @code
 {
     DateTime selectedDate = DateTime.Now.Date;
     Dictionary<DateTime, SessionModel[]> Sessions = new Dictionary<DateTime, SessionModel[]>();
 
-    SessionModel SelectedSession;
+    SessionModel originalSelectedSession;
+    SessionModel updateModel;    
+    SessionModel SelectedSession
+    {
+        get
+        {
+            return originalSelectedSession;
+        }
+        set
+        {   
+            logger.log(value);
+            originalSelectedSession = value;
+            if (value != null)
+            {    
+                updateModel = new SessionModel()
+                {
+                    Description =  new String(value.Description),
+                    Start =  value.Start,
+                    End =  value.End,
+                    MaxAttendees =  value.MaxAttendees,
+                    Subjects =  value.Subjects,
+                };
+
+                sessionStart = value.Start.TimeOfDay;
+                sessionDuration = value.End - value.Start;
+            }
+            else
+            {
+                updateModel = null;
+            }
+        }
+    }
+
+
+    string DescriptionProxy 
+    { 
+        get 
+        {
+            return updateModel?.Description ?? model.Description;
+        }
+        set
+        {
+            if (SelectedSession == null)
+            {
+                model.Description = value;
+            }
+            else
+            {
+                updateModel.Description = value;
+            }
+        }
+    }
 
     TimeSpan sessionStart = new TimeSpan(12,0,0);
     DateTime sessionStartProxy { get => DateTime.Now.Date + sessionStart; set { sessionStart = value.TimeOfDay; DigestStartAndDuration(); }}
@@ -123,23 +187,43 @@
 
     bool overlap = false;
 
-    void UpdateSessionSelections()
-    {
-        subjects = new BitArray(new int[] { SelectedSession?.Subjects ?? model.Subjects }).Cast<bool>().ToArray();
-    }
-
     void DigestStartAndDuration()
     {
-        logger.log(sessionStart);
-        model.Start = selectedDate + sessionStart;
-        model.End = selectedDate + sessionStart + sessionDuration;
-        logger.log(model);
+        if (SelectedSession == null)
+        {    
+            model.Start = selectedDate + sessionStart;
+            model.End = selectedDate + sessionStart + sessionDuration;
+        }
+        else
+        {
+            var tmp1 = updateModel.Start;
+            var tmp2 = updateModel.End;
+            updateModel.Start = selectedDate + sessionStart;
+            updateModel.End = selectedDate + sessionStart + sessionDuration;
+
+            var overlappingSessions = Sessions[selectedDate.Date.AddDays(1 - selectedDate.Day)]
+            .Where(x => x.Host.Id == state.User.Id)
+            .Where(x => x.Id != SelectedSession.Id)
+            .Where(x => x.Start < updateModel.End)
+            .Where(x => updateModel.Start < x.End);
+
+            logger.log(overlappingSessions);
+
+            if (overlappingSessions.Count() > 0)
+            {
+                updateModel.Start = tmp1;
+                updateModel.End = tmp2;
+
+                sessionStartProxy = tmp1;
+                sessionDurationProxy = DateTime.Now.Date + (tmp2 - tmp1);
+            }
+        }
     }
 
-    async Task<int> Host()
+    async Task Host()
     {
         DigestStartAndDuration();
-        DigestSubjectsArray();
+
         logger.log(model);
 
         var resp = await http.PostJsonAsync<Error>("api/session/host", model);
@@ -148,24 +232,52 @@
             Sessions.Remove(selectedDate.Date.AddDays(1 - selectedDate.Day));
             await calender.UpdateSessionDictionary();
         }
-        return 0;
+    }
+
+    async Task Kick(Guid id)
+    {
+        DigestStartAndDuration();
+
+        logger.log(model);
+
+        var resp = await http.PostJsonAsync<Error>($"api/session/{SelectedSession.Id}/kick/{id}", null);
+        if (resp.message == "")
+        {
+            Sessions.Remove(selectedDate.Date.AddDays(1 - selectedDate.Day));
+            await calender.UpdateSessionDictionary();
+        }
+    }
+
+    async Task Update()
+    {
+        DigestStartAndDuration();
+
+        UpdateSessionModel usm = new UpdateSessionModel
+        {
+            Description = updateModel.Description == originalSelectedSession.Description ? null : updateModel?.Description,
+            Start = updateModel.Start == originalSelectedSession.Start ? null : updateModel?.Start,
+            End = updateModel.End == originalSelectedSession.End ? null : updateModel?.End,
+            MaxAttendees = updateModel.MaxAttendees == originalSelectedSession.MaxAttendees ? null : updateModel?.MaxAttendees,
+            Subjects = updateModel.Subjects == originalSelectedSession.Subjects ? null : updateModel?.Subjects,
+        };
+
+        var resp = await http.PostJsonAsync<Error>($"api/session/{SelectedSession.Id}/changeDetails", usm);
+        if (resp.message == "")
+        {
+            Sessions.Remove(selectedDate.Date.AddDays(1 - selectedDate.Day));
+            await calender.UpdateSessionDictionary();
+        }
     }
 
     HostSessionModel model;
 
     Calender calender;
 
-    bool[] subjects = new bool[16];
+    SubjectProxy subjects;
 
     SessionFinderModel finderModel;
 
     SessionModel[] sessionsOnDate = new SessionModel[0];
-
-    void DigestSubjectsArray()
-    {
-        model.Subjects = (ushort)subjects.Aggregate((0, 0), (x,y) => (y ? x.Item1 | (1 << x.Item2) : x.Item1, x.Item2 + 1)).Item1;
-        logger.log(Convert.ToString(model.Subjects, toBase: 2));
-    }
 
     protected override void OnInitialized()
     {
@@ -181,10 +293,12 @@
         model = new HostSessionModel()
         {
             MaxAttendees = 1,
-            Description = "A description",
+            Description = "",
             Subjects = 0//0b0000_0000_0000_0000,
         };
         
+        subjects = new SubjectProxy(this);
+
         DigestStartAndDuration();
     }
 
@@ -203,4 +317,48 @@
         StateHasChanged(); 
     }
 
+    class SubjectProxy 
+    {
+        static IEnumerable<string> Split(string str, int chunkSize)
+        {
+            return Enumerable.Range(0, str.Length / chunkSize)
+                .Select(i => str.Substring(i * chunkSize, chunkSize));
+        }
+
+        static string BinaryString(ushort x)
+        {
+            return String.Join
+            ('_',
+                Split(
+                    Convert.ToString(x, 2)
+                    .PadLeft(16,'0')
+                ,4)
+            );
+        }
+
+        InstructorPanel inst;
+        public bool this[int i]
+        {
+            get
+            {                
+                return ((inst.updateModel?.Subjects ?? inst.model.Subjects) & (ushort)(1 << i)) != 0;
+            }
+            set
+            {
+                if (inst.SelectedSession == null)
+                {
+                    inst.model.Subjects ^= (ushort)((value ? (this[i] ? 0 : 1) : (this[i] ? 1 : 0)) << i);
+                }
+                else
+                {
+                    inst.updateModel.Subjects ^= (ushort)((value ? (this[i] ? 0 : 1) : (this[i] ? 1 : 0)) << i);
+                }
+            }
+        }
+
+        public SubjectProxy(InstructorPanel _i)
+        {
+            inst = _i;
+        }
+    }
 }

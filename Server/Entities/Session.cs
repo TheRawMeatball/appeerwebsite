@@ -7,10 +7,10 @@ namespace csharpwebsite.Server.Entities
 {
     public class Session
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
         public User Host { get; set; }
-        public int HostId { get; set; }
+        public Guid HostId { get; set; }
         public List<SessionAttendance> Attendees { get; set; }
 
         public int MaxAttendees { get; set; } = 1;

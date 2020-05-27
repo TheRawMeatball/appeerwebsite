@@ -46,7 +46,7 @@ namespace csharpwebsite.Server.Controllers
         {
             var question = _mapper.Map<Question>(model);
             
-            var author = await _userService.GetById(int.Parse(User.Identity.Name));
+            var author = await _userService.GetById(Guid.Parse(User.Identity.Name));
 
             question.Author = author;
             question.Grade = author.Grade;
@@ -63,7 +63,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var question = await _questionService.GetById(id);
 
@@ -78,14 +78,14 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm]QuestionModel model) 
+        public async Task<IActionResult> Update(Guid id, [FromForm]QuestionModel model) 
         {
             var question = _mapper.Map<Question>(model);
             question.Id = id;
 
             try
             {
-                await _questionService.Update(question, int.Parse(User.Identity.Name));
+                await _questionService.Update(question, Guid.Parse(User.Identity.Name));
                 return Ok();
             }
             catch (AppException ex)
@@ -100,7 +100,7 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpGet("{id}/content")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAvatarById(int id)
+        public async Task<IActionResult> GetAvatarById(Guid id)
         {
             var path = await _questionService.GetImagePathById(id);
 
@@ -113,11 +113,11 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                await _questionService.Delete(id, int.Parse(User.Identity.Name));            
+                await _questionService.Delete(id, Guid.Parse(User.Identity.Name));            
             }
             catch (AppException ex)
             {
@@ -154,15 +154,15 @@ namespace csharpwebsite.Server.Controllers
         //==================REPLY SYSTEM=====================//
 
         [HttpPost("{id}/reply")]
-        public async Task<IActionResult> Reply(int id, [FromForm]ReplyRecieveModel model) 
+        public async Task<IActionResult> Reply(Guid id, [FromForm]ReplyRecieveModel model) 
         {
             var reply = _mapper.Map<Reply>(model);
-            reply.AuthorId = int.Parse(User.Identity.Name);
+            reply.AuthorId = Guid.Parse(User.Identity.Name);
             return Ok(await _replyService.Reply((await _questionService.GetQuestionWithRepliesById(id)).Replies, reply));
         }
 
         [HttpGet("{id}/replies")]
-        public async Task<IActionResult> GetRepliesById(int id) 
+        public async Task<IActionResult> GetRepliesById(Guid id) 
         {
             var replies = await _replyService.GetQuestionRepliesById(id);
             var replyModels = _mapper.Map<List<ReplyModel>>(replies);

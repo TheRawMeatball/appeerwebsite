@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using csharpwebsite.Shared.Models;
@@ -6,7 +7,7 @@ namespace csharpwebsite.Server.Entities
 {
     public class Question
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Source { get; set; }
         public int? Page { get; set; }
         [Required]
@@ -14,7 +15,7 @@ namespace csharpwebsite.Server.Entities
         public int Grade { get; set; }
         [Required]
         public User Author { get; set; }
-        public int AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
         [Required]
         public string Content { get; set; }
         public List<Reply> Replies { get; set; }

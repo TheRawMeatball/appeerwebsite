@@ -1,3 +1,4 @@
+using System;
 using csharpwebsite.Shared.Models.Users;
 
 namespace csharpwebsite.Shared.Models
@@ -5,7 +6,7 @@ namespace csharpwebsite.Shared.Models
     public enum Subject {All, Math, Physics, Chemistry}
     public interface IForumObject
     {
-        int Id { get; set; }
+        Guid Id { get; set; }
         string DisplayTitle { get; }
         Subject Subject { get; set; }
         int Grade { get; set; }

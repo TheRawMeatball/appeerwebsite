@@ -12,16 +12,16 @@ namespace csharpwebsite.Server.Services
     public interface IUserService
     {
         Task<User> Authenticate(string username, string password);
-        Task<User> GetById(int id);
-        Task<List<Question>> GetQuestionsById(int id);
-        Task<List<Note>> GetNotesById(int id);
+        Task<User> GetById(Guid id);
+        Task<List<Question>> GetQuestionsById(Guid id);
+        Task<List<Note>> GetNotesById(Guid id);
         Task<User> GetByUsername(string username);
         Task<User> Create(User user, string password, IFormFileCollection formFiles);
         Task Update(User user, string password = null, IFormFileCollection formFiles = null);
-        Task Delete(int id);
-        Task<string> GetAvatarPathById(int id);
-        Task MakeInstructor(int id);
-        Task MakeAdmin(int id);
+        Task Delete(Guid id);
+        Task<string> GetAvatarPathById(Guid id);
+        Task MakeInstructor(Guid id);
+        Task MakeAdmin(Guid id);
     }
 
     public class UserService : IUserService
@@ -55,26 +55,26 @@ namespace csharpwebsite.Server.Services
             return user;
         }
 
-        public Task<User> GetById(int id)
+        public Task<User> GetById(Guid id)
         {
             return _context.Users.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public Task<List<Question>> GetQuestionsById(int id)
+        public Task<List<Question>> GetQuestionsById(Guid id)
         {
             return _context.Users.Where(x => x.Id == id)
             .Select(x => x.Questions)
             .FirstOrDefaultAsync();
         }
 
-        public Task<List<Note>> GetNotesById(int id)
+        public Task<List<Note>> GetNotesById(Guid id)
         {
             return _context.Users.Where(x => x.Id == id)
             .Select(x => x.Notes)
             .FirstOrDefaultAsync();
         }
 
-        public async Task<string> GetAvatarPathById(int id)
+        public async Task<string> GetAvatarPathById(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -170,7 +170,7 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)
@@ -218,7 +218,7 @@ namespace csharpwebsite.Server.Services
             return true;
         }
 
-        public async Task MakeInstructor(int id)
+        public async Task MakeInstructor(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
             user.Instructor = true;
@@ -226,7 +226,7 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task MakeAdmin(int id)
+        public async Task MakeAdmin(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
             user.Admin = true;

@@ -33,10 +33,10 @@ namespace csharpwebsite.Server.Controllers
             _sessionService = sessionService;
         }
 
-        int userId => int.Parse(User.Identity.Name);
+        Guid userId => Guid.Parse(User.Identity.Name);
 
         [HttpPost("{id}/attend")]
-        public async Task<IActionResult> Attend(int id) 
+        public async Task<IActionResult> Attend(Guid id) 
         {
             try
             {
@@ -50,7 +50,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPost("{id}/leave")]
-        public async Task<IActionResult> Leave(int id) 
+        public async Task<IActionResult> Leave(Guid id) 
         {
             try
             {
@@ -98,11 +98,11 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin, Instructor")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                await _sessionService.Delete(id, User.IsInRole("Admin") ? -1 : userId);
+                await _sessionService.Delete(id, User.IsInRole("Admin") ? Guid.Empty : userId);
                 return Ok();
             }
             catch (AppException ex)
@@ -113,7 +113,7 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpPost("{sessionId}/kick/{userIdToKick}")]
         [Authorize(Roles = "Admin, Instructor")]
-        public async Task<IActionResult> Kick(int sessionId, int userIdToKick)
+        public async Task<IActionResult> Kick(Guid sessionId, Guid userIdToKick)
         {
             if (!User.IsInRole("Admin") && (await _sessionService.GetSessionById(sessionId)).HostId == userId)
             {
@@ -123,6 +123,26 @@ namespace csharpwebsite.Server.Controllers
             try
             {
                 await _sessionService.RemoveUserFromSession(sessionId, userIdToKick);
+                return Ok(new { message = "" });
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{sessionId}/changeDetails")]
+        [Authorize(Roles = "Admin, Instructor")]
+        public async Task<IActionResult> ChangeDetails([FromBody] UpdateSessionModel model, Guid sessionId)
+        {
+            if (!User.IsInRole("Admin") && (await _sessionService.GetSessionById(sessionId)).HostId == userId)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                await _sessionService.ChangeSession(sessionId, model);
                 return Ok(new { message = "" });
             }
             catch (AppException ex)

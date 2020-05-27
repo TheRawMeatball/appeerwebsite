@@ -12,12 +12,12 @@ namespace csharpwebsite.Server.Services
 {
     public interface INoteService
     {
-        Task<Note> GetById(int id);
-        Task<int[]> GetByQuery(Subject subject, int grade);
-        Task<Note> GetNoteWithRepliesById(int id);
+        Task<Note> GetById(Guid id);
+        Task<Guid[]> GetByQuery(Subject subject, int grade);
+        Task<Note> GetNoteWithRepliesById(Guid id);
         Task<Note> Create(Note note);
-        Task Update(Note note, int userId);
-        Task Delete(int id, int userId);
+        Task Update(Note note, Guid userId);
+        Task Delete(Guid id, Guid userId);
     }
 
     public class NoteService : INoteService
@@ -31,7 +31,7 @@ namespace csharpwebsite.Server.Services
             _imageService = imageService;
         }
 
-        public Task<Note> GetById(int id)
+        public Task<Note> GetById(Guid id)
         {
             return _context.Notes
             .Where(x => x.Id == id)
@@ -39,7 +39,7 @@ namespace csharpwebsite.Server.Services
             .FirstOrDefaultAsync();
         }
 
-        public Task<int[]> GetByQuery(Subject subject, int grade)
+        public Task<Guid[]> GetByQuery(Subject subject, int grade)
         {
             return _context.Notes
             .Where(x => ((subject == Subject.All) || (x.Subject == subject)) && (x.Grade == grade || grade > 12))
@@ -47,7 +47,7 @@ namespace csharpwebsite.Server.Services
             .ToArrayAsync();
         }
 
-        public async Task<Note> GetNoteWithRepliesById(int id)
+        public async Task<Note> GetNoteWithRepliesById(Guid id)
         {
             return await _context.Notes
             .Where(x => x.Id == id)
@@ -69,7 +69,7 @@ namespace csharpwebsite.Server.Services
             return note;
         }
 
-        public async Task Update(Note noteParam, int userId)
+        public async Task Update(Note noteParam, Guid userId)
         {
             var note = await _context.Notes.FindAsync(noteParam.Id);
 
@@ -77,7 +77,7 @@ namespace csharpwebsite.Server.Services
                 throw new AppException("Note not found");
             }
 
-            if (userId != note.AuthorId && userId > 0)
+            if (userId != note.AuthorId && userId != Guid.Empty)
             {
                 throw new AppException("Unauthorized.");
             }
@@ -97,12 +97,12 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(int id, int userId)
+        public async Task Delete(Guid id, Guid userId)
         {
             var note = await _context.Notes.FindAsync(id);
             if (note != null)
             {
-                if (note.AuthorId != userId && userId > 0)
+                if (note.AuthorId != userId && userId != Guid.Empty)
                 {
                     throw new AppException("Unauthorized.");
                 }

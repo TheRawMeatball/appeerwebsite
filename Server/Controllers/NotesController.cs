@@ -46,7 +46,7 @@ namespace csharpwebsite.Server.Controllers
         {
             var note = _mapper.Map<Note>(model);
 
-            var author = await _userService.GetById(int.Parse(User.Identity.Name));
+            var author = await _userService.GetById(Guid.Parse(User.Identity.Name));
 
             note.Author = author;
             note.Grade = author.Grade;
@@ -63,7 +63,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var note = await _noteService.GetById(id);
 
@@ -77,14 +77,14 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm]NoteModel model) 
+        public async Task<IActionResult> Update(Guid id, [FromForm]NoteModel model) 
         {
             var note = _mapper.Map<Note>(model);
             note.Id = id;
 
             try
             {
-                await _noteService.Update(note, User.IsInRole("Admin") ? -1 : int.Parse(User.Identity.Name));
+                await _noteService.Update(note, User.IsInRole("Admin") ? Guid.Empty : Guid.Parse(User.Identity.Name));
                 return Ok();
             }
             catch (AppException ex)
@@ -98,11 +98,11 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                await _noteService.Delete(id, User.IsInRole("Admin") ? -1 : int.Parse(User.Identity.Name));            
+                await _noteService.Delete(id, User.IsInRole("Admin") ? Guid.Empty : Guid.Parse(User.Identity.Name));            
             }
             catch (AppException ex)
             {
@@ -124,15 +124,15 @@ namespace csharpwebsite.Server.Controllers
         //==================REPLY SYSTEM=====================//
 
         [HttpPost("{id}/reply")]
-        public async Task<IActionResult> Reply(int id, [FromForm]ReplyRecieveModel model) 
+        public async Task<IActionResult> Reply(Guid id, [FromForm]ReplyRecieveModel model) 
         {
             var reply = _mapper.Map<Reply>(model);
-            reply.AuthorId = int.Parse(User.Identity.Name);
+            reply.AuthorId = Guid.Parse(User.Identity.Name);
             return Ok(await _replyService.Reply((await _noteService.GetNoteWithRepliesById(id)).Replies, reply));
         }
 
         [HttpGet("{id}/replies")]
-        public async Task<IActionResult> GetRepliesById(int id) 
+        public async Task<IActionResult> GetRepliesById(Guid id) 
         {
             var replies = await _replyService.GetNoteRepliesById(id);
             var replyModels = _mapper.Map<List<ReplyModel>>(replies);

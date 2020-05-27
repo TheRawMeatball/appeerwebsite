@@ -1,8 +1,10 @@
+using System;
+
 namespace csharpwebsite.Shared.Models.Users
 {
   public class StrippedUserModel
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Username { get; set; }

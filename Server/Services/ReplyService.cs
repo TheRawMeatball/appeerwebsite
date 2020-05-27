@@ -11,13 +11,13 @@ namespace csharpwebsite.Server.Services
 {
     public interface IReplyService
     {
-        Task<Reply> GetById(int id);
-        Task<Reply> GetNestedRepliesById(int id);
-        Task<List<Reply>> GetNoteRepliesById(int id);
-        Task<List<Reply>> GetQuestionRepliesById(int id);
+        Task<Reply> GetById(Guid id);
+        Task<Reply> GetNestedRepliesById(Guid id);
+        Task<List<Reply>> GetNoteRepliesById(Guid id);
+        Task<List<Reply>> GetQuestionRepliesById(Guid id);
         Task<Reply> Reply(List<Reply> target, Reply reply);
         Task Update(Reply reply);
-        Task Delete(int id, int userId);
+        Task Delete(Guid id, Guid userId);
     }
 
     public class ReplyService : IReplyService
@@ -31,7 +31,7 @@ namespace csharpwebsite.Server.Services
             _imageService = imageService;
         }
 
-        public async Task<Reply> GetById(int id)
+        public async Task<Reply> GetById(Guid id)
         {
             var reply = await _context.Replies
             .Include(x => x.Replies)
@@ -47,7 +47,7 @@ namespace csharpwebsite.Server.Services
             }
         }
 
-        public async Task<Reply> GetNestedRepliesById(int id)
+        public async Task<Reply> GetNestedRepliesById(Guid id)
         {
             var replies = await _context.Replies
             .Include(x => x.Replies)
@@ -68,7 +68,7 @@ namespace csharpwebsite.Server.Services
             }
         }
 
-        public Task<List<Reply>> GetNoteRepliesById(int id)
+        public Task<List<Reply>> GetNoteRepliesById(Guid id)
         {
             return _context.Replies
             .Where(x => x.TopNoteId == id && x.ReplyId == null)
@@ -96,7 +96,7 @@ namespace csharpwebsite.Server.Services
             .ToListAsync();
         }
 
-        public Task<List<Reply>> GetQuestionRepliesById(int id)
+        public Task<List<Reply>> GetQuestionRepliesById(Guid id)
         {
             return _context.Replies
             .Where(x => x.TopQuestionId == id && x.ReplyId == null)
@@ -138,7 +138,7 @@ namespace csharpwebsite.Server.Services
                 throw new AppException("Reply not found");
             }
 
-            if (replyParam.AuthorId != reply.AuthorId && replyParam.AuthorId > 0)
+            if (replyParam.AuthorId != reply.AuthorId && replyParam.AuthorId != Guid.Empty)
             {
                 throw new AppException("Unauthorized.");
             }
@@ -152,12 +152,12 @@ namespace csharpwebsite.Server.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Delete(int id, int userId)
+        public async Task Delete(Guid id, Guid userId)
         {
             var reply = await _context.Replies.FindAsync(id);
             if (reply != null)
             {
-                if (reply.AuthorId != userId && userId > 0)
+                if (reply.AuthorId != userId && userId != Guid.Empty)
                 {
                     throw new AppException("Unauthorized.");
                 }

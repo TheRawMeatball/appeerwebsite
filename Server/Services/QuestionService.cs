@@ -12,13 +12,13 @@ namespace csharpwebsite.Server.Services
 {
     public interface IQuestionService
     {
-        Task<Question> GetById(int id);
-        Task<int[]> GetByQuery(Subject subject, int grade);
-        Task<Question> GetQuestionWithRepliesById(int id);
+        Task<Question> GetById(Guid id);
+        Task<Guid[]> GetByQuery(Subject subject, int grade);
+        Task<Question> GetQuestionWithRepliesById(Guid id);
         Task<Question> Create(Question note, IFormFileCollection files);
-        Task Update(Question note, int userId);
-        Task Delete(int id, int userId);
-        Task<string> GetImagePathById(int id);
+        Task Update(Question note, Guid userId);
+        Task Delete(Guid id, Guid userId);
+        Task<string> GetImagePathById(Guid id);
         Task<string[]> GetSources(int grade, Subject subject, string searchString);
         Task<Question[]> Find(Question question);
     }
@@ -34,7 +34,7 @@ namespace csharpwebsite.Server.Services
             _imageService = imageService;
         }
 
-        public Task<Question> GetById(int id)
+        public Task<Question> GetById(Guid id)
         {
             return _context.Questions
             .Where(x => x.Id == id)
@@ -42,7 +42,7 @@ namespace csharpwebsite.Server.Services
             .FirstOrDefaultAsync();
         }
 
-        public Task<Question> GetQuestionWithRepliesById(int id)
+        public Task<Question> GetQuestionWithRepliesById(Guid id)
         {
             return _context.Questions
             .Where(x => x.Id == id)
@@ -76,7 +76,7 @@ namespace csharpwebsite.Server.Services
             return question;
         }
 
-        public async Task Update(Question questionParam, int userId)
+        public async Task Update(Question questionParam, Guid userId)
         {
             var question = await _context.Questions.FindAsync(questionParam.Id);
 
@@ -95,7 +95,7 @@ namespace csharpwebsite.Server.Services
             throw new NotImplementedException();
         }
 
-        public async Task Delete(int id, int userId)
+        public async Task Delete(Guid id, Guid userId)
         {
             var question = await _context.Questions.FindAsync(id);
             if (question != null)
@@ -114,12 +114,12 @@ namespace csharpwebsite.Server.Services
             }
         }
 
-        public async Task<string> GetImagePathById(int id)
+        public async Task<string> GetImagePathById(Guid id)
         {
             return _imageService.QuestionPath + (await _context.Questions.FindAsync(id)).Content;
         }
 
-        public Task<int[]> GetByQuery(Subject subject, int grade)
+        public Task<Guid[]> GetByQuery(Subject subject, int grade)
         {
             return _context.Questions
             .Where(x => ((subject == Subject.All) || (x.Subject == subject)) && (x.Grade == grade || grade > 12))

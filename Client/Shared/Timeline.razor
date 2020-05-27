@@ -9,7 +9,6 @@
     bool startOverlap = Overlap;
 }
 
-
 <div class="row mt-3">
     <div class="col px-0" style="height: 2rem;">
         <div class="schedule" style="z-index:0;position:absolute;width:100%;height:2rem;top:0;">
@@ -39,7 +38,7 @@
 <div class="row">
 
     @{
-        var SortedSessions = new Dictionary<int, SessionModel[]>();
+        var SortedSessions = new Dictionary<Guid, SessionModel[]>();
 
         SortedSessions = Sessions
         .GroupBy(x => x.Host.Id)
@@ -114,8 +113,9 @@
                                 preserveSelection = true;
                             }
 
-                            <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @color ;float: left; border-left: @bl; border-right: @br;" data-toggle="tooltip" data-placement="right" 
-                                 title="@SubjectInterpreter(item.Subjects)" @onclick="async () => {SelectedSession = item; await SelectedSessionChanged.InvokeAsync(item);}"></div>
+                            <div style="height: 2rem ;width: @width% ;margin-left: @shift% ;background-color: @color ;float: left; border-left: @bl; border-right: @br; 
+                                z-index: @(item == SelectedSession ? 1 : 0); position: relative;" data-toggle="tooltip" data-placement="right" 
+                                title="@SubjectInterpreter(item.Subjects)" @onclick="async () => {SelectedSession = item; await SelectedSessionChanged.InvokeAsync(item);}"></div>
                             i++;
                         }
                     }

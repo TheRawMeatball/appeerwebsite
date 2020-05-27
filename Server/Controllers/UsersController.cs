@@ -117,7 +117,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var user = await _userService.GetById(id);
             var model = _mapper.Map<UserModel>(user);
@@ -126,7 +126,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}/questions")]
-        public async Task<IActionResult> GetQuestionsById(int id)
+        public async Task<IActionResult> GetQuestionsById(Guid id)
         {
             var user = await _userService.GetQuestionsById(id);
             var model = _mapper.Map<List<StrippedQuestionModel>>(user);
@@ -135,7 +135,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}/notes")]
-        public async Task<IActionResult> GetNotesById(int id)
+        public async Task<IActionResult> GetNotesById(Guid id)
         {
             var user = await _userService.GetNotesById(id);
             var model = _mapper.Map<List<StrippedNoteModel>>(user);
@@ -145,7 +145,7 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpGet("{id}/avatar")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAvatarById(int id)
+        public async Task<IActionResult> GetAvatarById(Guid id)
         {
             var path = await _userService.GetAvatarPathById(id);
 
@@ -158,7 +158,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm]UpdateModel model)
+        public async Task<IActionResult> Update(Guid id, [FromForm]UpdateModel model)
         {
             if (id.ToString() != User.Identity.Name && !User.IsInRole("Admin"))
             {
@@ -183,7 +183,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             if (id.ToString() != HttpContext.User.Identity.Name && !User.IsInRole("Admin"))
             {
@@ -196,7 +196,7 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpPatch("{id}/makeadmin")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> MakeAdmin(int id)
+        public async Task<IActionResult> MakeAdmin(Guid id)
         {
             await _userService.MakeAdmin(id);
             return Ok();
@@ -204,7 +204,7 @@ namespace csharpwebsite.Server.Controllers
 
         [HttpPatch("{id}/makeinstructor")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> MakeInstructor(int id)
+        public async Task<IActionResult> MakeInstructor(Guid id)
         {
             await _userService.MakeInstructor(id);
             return Ok();

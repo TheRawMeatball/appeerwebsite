@@ -11,6 +11,7 @@ namespace csharpwebsite.Shared.Models.Sessions
         public DateTime End { get; set; }
         [Required]
         public ushort Subjects { get; set; }
+        [Required]
         public int MaxAttendees { get; set; }
         public string Description { get; set; } = "";
     }

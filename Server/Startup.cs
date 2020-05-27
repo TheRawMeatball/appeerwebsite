@@ -71,7 +71,7 @@ namespace csharpwebsite.Server
                     OnTokenValidated = context =>
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                        var user = userService.GetById(int.Parse(context.Principal.Identity.Name));
+                        var user = userService.GetById(Guid.Parse(context.Principal.Identity.Name));
                         if (user == null)
                         {
                             // return unauthorized if user no longer exists

@@ -13,7 +13,7 @@ namespace csharpwebsite.Shared.Models.Sessions
         [Required]
         public ushort Subjects { get; set; }
         public bool GetBooked { get; set; }
-        public int? HostId { get; set; }
+        public Guid? HostId { get; set; }
         public int Grade { get; set; }
     }
 }

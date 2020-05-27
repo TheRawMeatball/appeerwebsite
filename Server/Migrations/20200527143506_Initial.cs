@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace csharpwebsite.Server.Migrations
 {
-    public partial class Restart : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,8 +11,7 @@ namespace csharpwebsite.Server.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(nullable: false),
                     FirstName = table.Column<string>(nullable: false),
                     LastName = table.Column<string>(nullable: false),
                     Username = table.Column<string>(nullable: false),
@@ -32,12 +31,11 @@ namespace csharpwebsite.Server.Migrations
                 name: "Notes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(nullable: false),
                     Subject = table.Column<int>(nullable: false),
                     Grade = table.Column<int>(nullable: false),
-                    AuthorId = table.Column<int>(nullable: false),
+                    AuthorId = table.Column<Guid>(nullable: false),
                     Content = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
@@ -55,13 +53,12 @@ namespace csharpwebsite.Server.Migrations
                 name: "Questions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(nullable: false),
                     Source = table.Column<string>(nullable: true),
                     Page = table.Column<int>(nullable: true),
                     Subject = table.Column<int>(nullable: false),
                     Grade = table.Column<int>(nullable: false),
-                    AuthorId = table.Column<int>(nullable: false),
+                    AuthorId = table.Column<Guid>(nullable: false),
                     Content = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
@@ -79,13 +76,14 @@ namespace csharpwebsite.Server.Migrations
                 name: "SessionSlots",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    HostId = table.Column<int>(nullable: false),
+                    Id = table.Column<Guid>(nullable: false),
+                    HostId = table.Column<Guid>(nullable: false),
                     MaxAttendees = table.Column<int>(nullable: false),
                     Start = table.Column<DateTime>(nullable: false),
                     End = table.Column<DateTime>(nullable: false),
-                    Subjects = table.Column<ushort>(nullable: false)
+                    Subjects = table.Column<ushort>(nullable: false),
+                    Grade = table.Column<int>(nullable: false),
+                    Description = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -102,13 +100,12 @@ namespace csharpwebsite.Server.Migrations
                 name: "Replies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AuthorId = table.Column<int>(nullable: false),
+                    Id = table.Column<Guid>(nullable: false),
+                    AuthorId = table.Column<Guid>(nullable: false),
                     Content = table.Column<string>(nullable: false),
-                    ReplyId = table.Column<int>(nullable: true),
-                    TopQuestionId = table.Column<int>(nullable: true),
-                    TopNoteId = table.Column<int>(nullable: true)
+                    ReplyId = table.Column<Guid>(nullable: true),
+                    TopQuestionId = table.Column<Guid>(nullable: true),
+                    TopNoteId = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -124,29 +121,28 @@ namespace csharpwebsite.Server.Migrations
                         column: x => x.ReplyId,
                         principalTable: "Replies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Replies_Notes_TopNoteId",
                         column: x => x.TopNoteId,
                         principalTable: "Notes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Replies_Questions_TopQuestionId",
                         column: x => x.TopQuestionId,
                         principalTable: "Questions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SessionAttendance",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AttendeeId = table.Column<int>(nullable: false),
-                    SessionId = table.Column<int>(nullable: false)
+                    Id = table.Column<Guid>(nullable: false),
+                    AttendeeId = table.Column<Guid>(nullable: false),
+                    SessionId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {

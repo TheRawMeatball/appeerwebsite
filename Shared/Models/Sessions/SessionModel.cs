@@ -6,7 +6,7 @@ namespace csharpwebsite.Shared.Models.Sessions
 {
     public class SessionModel
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public StrippedUserModel Host { get; set; }
         public List<StrippedUserModel> Attendees { get; set; }
         public DateTime Start { get; set; }
@@ -37,7 +37,7 @@ namespace csharpwebsite.Shared.Models.Sessions
         public override int GetHashCode()
         {
             // TODO: write your implementation of GetHashCode() here
-            return (Id << 2 * 5) >> 2;
+            return Id.GetHashCode();
         }
     }
 }

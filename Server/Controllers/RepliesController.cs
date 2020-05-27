@@ -35,10 +35,10 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPost("{id}")]
-        public async Task<IActionResult> ReplyToReply(int id, [FromForm]ReplyRecieveModel model) 
+        public async Task<IActionResult> ReplyToReply(Guid id, [FromForm]ReplyRecieveModel model) 
         {
             var reply = _mapper.Map<Reply>(model);
-            reply.AuthorId = int.Parse(User.Identity.Name);
+            reply.AuthorId = Guid.Parse(User.Identity.Name);
 
             try
             {   var target = await _replyService.GetById(id);
@@ -53,11 +53,11 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> EditReply (int id, [FromForm]ReplyRecieveModel model) 
+        public async Task<IActionResult> EditReply (Guid id, [FromForm]ReplyRecieveModel model) 
         {
             var reply = _mapper.Map<Reply>(model);
             reply.Id = id;
-            reply.AuthorId = User.IsInRole("Admin") ? -1 : int.Parse(User.Identity.Name);
+            reply.AuthorId = User.IsInRole("Admin") ? Guid.Empty : Guid.Parse(User.Identity.Name);
 
             try
             {
@@ -71,7 +71,7 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetReply(int id)
+        public async Task<IActionResult> GetReply(Guid id)
         {
             try
             {
@@ -85,9 +85,9 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _replyService.Delete(id, User.IsInRole("Admin") ? -1 : int.Parse(User.Identity.Name));
+            await _replyService.Delete(id, User.IsInRole("Admin") ? Guid.Empty : Guid.Parse(User.Identity.Name));
             return Ok();
         }
 

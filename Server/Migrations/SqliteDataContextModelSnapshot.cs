@@ -18,12 +18,12 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.Note", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -48,12 +48,12 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.Question", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -80,25 +80,25 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.Reply", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ReplyId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("ReplyId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int?>("TopNoteId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("TopNoteId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int?>("TopQuestionId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("TopQuestionId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -115,9 +115,9 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.Session", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
@@ -128,8 +128,8 @@ namespace csharpwebsite.Server.Migrations
                     b.Property<int>("Grade")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("HostId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("HostId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MaxAttendees")
                         .HasColumnType("INTEGER");
@@ -149,15 +149,15 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.SessionAttendance", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("AttendeeId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AttendeeId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("SessionId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -170,9 +170,9 @@ namespace csharpwebsite.Server.Migrations
 
             modelBuilder.Entity("csharpwebsite.Server.Entities.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("Admin")
                         .HasColumnType("INTEGER");
