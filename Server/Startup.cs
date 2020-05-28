@@ -37,7 +37,7 @@ namespace csharpwebsite.Server
 
             services.AddControllersWithViews();
 
-            // use sqlite db
+            /* use sqlite db
             if (_env.IsDevelopment())
             {
                 services.AddDbContext<DataContext, SqliteDataContext>();
@@ -46,7 +46,9 @@ namespace csharpwebsite.Server
             {
                 services.AddDbContext<DataContext, DataContext>();
             }
+            */
 
+            services.AddDbContext<DataContext, MariaDBDataContext>();
 
             services.AddCors();
             services.AddControllers()
@@ -130,6 +132,18 @@ namespace csharpwebsite.Server
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.Use(async (context, next) =>
+            {
+                foreach (var item in context.Request.RouteValues)
+                {
+                    if (item.Key.Contains("id", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Request.RouteValues[item.Key] = ((string)item.Value).ToGuid();
+                    }
+                }
+                await next.Invoke();
+            });
 
             app.UseEndpoints(endpoints =>
             {

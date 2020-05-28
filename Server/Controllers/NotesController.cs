@@ -12,6 +12,7 @@ using csharpwebsite.Shared.Models.Questions;
 using System.Collections.Generic;
 using csharpwebsite.Shared.Models.Replies;
 using csharpwebsite.Shared.Models;
+using System.Linq;
 
 namespace csharpwebsite.Server.Controllers
 {
@@ -118,7 +119,7 @@ namespace csharpwebsite.Server.Controllers
         [HttpGet("{subject}/{grade}")]
         public async Task<IActionResult> GetByQuery(Subject subject, int grade)
         {
-            return Ok(await _noteService.GetByQuery(subject, grade));
+            return Ok((await _noteService.GetByQuery(subject, grade)).Select(x => x.ToBase64()));
         }
 
         //==================REPLY SYSTEM=====================//

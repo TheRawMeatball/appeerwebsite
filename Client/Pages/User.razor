@@ -1,4 +1,4 @@
-@page "/user/{id:int}"
+@page "/user/{id}"
 @inject HttpClient http
 @inject JSLogger logger
 
@@ -52,7 +52,7 @@ else
 
 @code {
 	[Parameter]
-	public int id { get;set; }
+	public String id { get;set; }
 	UserModel user;
 
 	List<IForumObject> notes 

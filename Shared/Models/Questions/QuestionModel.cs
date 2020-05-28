@@ -6,7 +6,7 @@ namespace csharpwebsite.Shared.Models.Questions
 {
     public class QuestionModel : IForumObject
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Source { get; set; }
         public int? Page { get; set; }
         public Subject Subject { get; set; }

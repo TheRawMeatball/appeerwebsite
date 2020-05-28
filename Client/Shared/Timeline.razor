@@ -38,7 +38,7 @@
 <div class="row">
 
     @{
-        var SortedSessions = new Dictionary<Guid, SessionModel[]>();
+        var SortedSessions = new Dictionary<string, SessionModel[]>();
 
         SortedSessions = Sessions
         .GroupBy(x => x.Host.Id)

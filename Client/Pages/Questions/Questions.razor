@@ -39,7 +39,7 @@
     }
 
     protected override async Task OnInitializedAsync() {
-        var questionIds = await http.GetJsonAsync<int[]>($"api/questions/{Subject}/{state.User.Grade}");
+        var questionIds = await http.GetJsonAsync<string[]>($"api/questions/{Subject}/{state.User.Grade}");
         var questionRequestTasks = questionIds.Select(async (id) => 
         {
             var x = await http.GetJsonAsync<QuestionModel>($"api/questions/{id}");

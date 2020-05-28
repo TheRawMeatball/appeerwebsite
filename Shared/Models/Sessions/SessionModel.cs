@@ -6,7 +6,7 @@ namespace csharpwebsite.Shared.Models.Sessions
 {
     public class SessionModel
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public StrippedUserModel Host { get; set; }
         public List<StrippedUserModel> Attendees { get; set; }
         public DateTime Start { get; set; }

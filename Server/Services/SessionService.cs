@@ -70,7 +70,7 @@ namespace csharpwebsite.Server.Services
                 .Where(x => x.End < finder.End)
                 .Where(x => (x.Attendees.Count < x.MaxAttendees) || finder.GetBooked || x.Attendees.Any(a => a.AttendeeId == userId))
                 .Where(x => (x.Subjects & finder.Subjects) > 0)
-                .Where(x => x.HostId == finder.HostId || finder.HostId == null)
+                .Where(x => x.HostId.ToBase64() == finder.HostId || finder.HostId == null)
                 .Where(x => x.Grade == finder.Grade)
                 .Include(x => x.Host)
                 .Include(x => x.Attendees)

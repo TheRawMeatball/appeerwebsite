@@ -48,8 +48,8 @@ namespace csharpwebsite.Client
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
 
-            var id = await _localStorage.GetItemAsync<int>("userId");
-            _state.User = await _httpClient.GetJsonAsync<UserModel>("api/users/" + id.ToString());
+            var id = await _localStorage.GetItemAsync<string>("userId");
+            _state.User = await _httpClient.GetJsonAsync<UserModel>($"api/users/{id}");
 
             var x = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
             return x;

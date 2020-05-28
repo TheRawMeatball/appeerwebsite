@@ -5,7 +5,7 @@ namespace csharpwebsite.Shared.Models.Notes
 {
     public class NoteModel : IForumObject
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public Subject Subject { get; set; }
         public string Content { get; set; }

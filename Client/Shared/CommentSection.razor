@@ -52,7 +52,7 @@
         replies = await http.GetJsonAsync<List<ReplyModel>>($"api/{apiNamespace}/{focusedModel.Id}/replies");
     }
 
-    public async Task FocusOnComment(Guid id)
+    public async Task FocusOnComment(string id)
     {
         focused = true;
         focusedReply = await http.GetJsonAsync<ReplyModel>($"api/replies/{id}");

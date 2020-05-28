@@ -79,22 +79,16 @@ namespace csharpwebsite.Server.Controllers
 
         private AuthUserModel AuthMapper(User user)
         {
-            return new AuthUserModel
+            var aum = _mapper.Map<AuthUserModel>(user);
+
+            aum.Expiry = DateTime.Now.AddDays(5);
+            aum.Token = GenerateJWT(user.Id.ToString(), DateTime.Now.AddDays(5), new string[] 
             {
-                Id = user.Id,
-                Username = user.Username,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Grade = user.Grade,
-                Token = GenerateJWT(user.Id.ToString(), DateTime.Now.AddDays(5), new string[] 
-                {
-                    user.Admin ? "Admin" : null,
-                    user.Instructor ? "Instructor" : null
-                }),
-                Expiry = DateTime.Now.AddDays(5),
-                Admin = user.Admin,
-                Instructor = user.Instructor
-            };
+                user.Admin ? "Admin" : null,
+                user.Instructor ? "Instructor" : null
+            });
+
+            return aum;
         }
 
         [AllowAnonymous]
