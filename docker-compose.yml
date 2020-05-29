@@ -1,22 +1,55 @@
 version: "3.8"
 
 services: 
-	
-	website: 
-		build: 
-			context: ./
-			args: 
-				
+    website:
+        image: appeerwebsite
+        build: 
+            context: ./
+        volumes: 
+          - type: volume
+            source: imgdata
+            target: /var/lib/appeer/uploads/
+            volume:
+                nocopy: true
+          - type: bind
+            source: ~/.aspnet/https
+            target: /https
+            read_only: true
+        environment: 
+            upload_path: "/var/lib/appeer/uploads/"
+            db: Main
+            uid: root
+            MYSQL_ROOT_PASSWORD: mypwd
+            DATABASE_ADDRESS: db
+            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_URLS: https://+:443;http://+:80
+            ASPNETCORE_Kestrel__Certificates__Default__Password: P3PE_TH3_FR0G_1S_F0R3VER
+            ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+        ports: 
+          - "80:80"
+          - "443:443"
 
+    db:
+        image: mariadb
+        volumes: 
+          - type: volume
+            source: dbdata
+            target: /var/lib/mysql
+            volume:
+                nocopy: true
+        environment:
+             MYSQL_ROOT_PASSWORD: mypwd
+             MYSQL_DATABASE: Main
+        ports:
+           - "3306:3306"
+        secrets: 
+          - source: mycnf
+            target: /etc/mysql/my.cnf
+    
+volumes: 
+    dbdata:
+    imgdata:
 
-	db:
-		image: mariadb
-		restart: always
-		environment:
-		  MYSQL_ROOT_PASSWORD: mypwd
-	
-	adminer:
-		image: adminer
-		restart: always
-		ports:
-		  - 8080:8080
+secrets: 
+    mycnf: 
+        file: ./my.cnf

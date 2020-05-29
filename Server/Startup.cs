@@ -15,6 +15,7 @@ using csharpwebsite.Server.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace csharpwebsite.Server
 {
@@ -36,17 +37,6 @@ namespace csharpwebsite.Server
         {
 
             services.AddControllersWithViews();
-
-            /* use sqlite db
-            if (_env.IsDevelopment())
-            {
-                services.AddDbContext<DataContext, SqliteDataContext>();
-            }
-            else
-            {
-                services.AddDbContext<DataContext, MariaDBDataContext>();
-            }
-            */
 
             services.AddDbContext<DataContext, MariaDBDataContext>();
 
@@ -100,12 +90,21 @@ namespace csharpwebsite.Server
             });
 
             // configure DI for application services
-            services.AddScoped<IImageService, ImageService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<INoteService, NoteService>();
-            services.AddScoped<IQuestionService, QuestionService>();
-            services.AddScoped<IReplyService, ReplyService>();
-            services.AddScoped<ISessionService, SessionService>();
+            services
+            .AddScoped<IImageService, ImageService>()
+            .AddScoped<IUserService, UserService>()
+            .AddScoped<INoteService, NoteService>()
+            .AddScoped<IQuestionService, QuestionService>()
+            .AddScoped<IReplyService, ReplyService>()
+            .AddScoped<ISessionService, SessionService>();
+
+            Directory.CreateDirectory(appSettings.UploadPath + "/avatars");
+            Directory.CreateDirectory(appSettings.UploadPath + "/questions");
+            try
+            {
+                File.Copy(appSettings.DefaultAvatarPath, $"{appSettings.UploadPath}avatars/person.svg+xml");
+            }
+            catch (IOException) { }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -124,7 +123,7 @@ namespace csharpwebsite.Server
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 

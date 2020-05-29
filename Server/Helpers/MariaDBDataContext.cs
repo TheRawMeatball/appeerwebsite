@@ -16,7 +16,7 @@ namespace csharpwebsite.Server.Helpers
             //"Server=172.17.0.2;Database=Main;uid=root;Password=mypwd;"
             options.UseMySql(Configuration.GetConnectionString("WebApiDatabase"), mySqlOptions => mySqlOptions
                     .ServerVersion(new Version(10 , 4), ServerType.MariaDb)
-                    .CharSet(CharSet.Latin1)
+                    .CharSet(CharSet.Utf8Mb4)
                     .EnableRetryOnFailure(5)
             );
         }
