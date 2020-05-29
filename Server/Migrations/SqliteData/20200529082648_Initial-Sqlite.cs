@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace csharpwebsite.Server.Migrations
+namespace csharpwebsite.Server.Migrations.SqliteData
 {
-    public partial class InitialMySql : Migration
+    public partial class InitialSqlite : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

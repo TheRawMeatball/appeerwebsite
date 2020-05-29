@@ -13,7 +13,8 @@ namespace csharpwebsite.Server.Helpers
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             // connect to sqlite database
-            options.UseMySql("Server=172.17.0.2;Database=Main;uid=root;Password=mypwd;", mySqlOptions => mySqlOptions
+            //"Server=172.17.0.2;Database=Main;uid=root;Password=mypwd;"
+            options.UseMySql(Configuration.GetConnectionString("WebApiDatabase"), mySqlOptions => mySqlOptions
                     .ServerVersion(new Version(10 , 4), ServerType.MariaDb)
                     .CharSet(CharSet.Latin1)
                     .EnableRetryOnFailure(5)

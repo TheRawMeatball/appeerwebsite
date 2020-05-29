@@ -1,0 +1,22 @@
+version: "3.8"
+
+services: 
+	
+	website: 
+		build: 
+			context: ./
+			args: 
+				
+
+
+	db:
+		image: mariadb
+		restart: always
+		environment:
+		  MYSQL_ROOT_PASSWORD: mypwd
+	
+	adminer:
+		image: adminer
+		restart: always
+		ports:
+		  - 8080:8080

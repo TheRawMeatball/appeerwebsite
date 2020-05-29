@@ -28,14 +28,14 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<int>("Grade")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<int>("Subject")
                         .HasColumnType("int");
@@ -58,7 +58,7 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<int>("Grade")
                         .HasColumnType("int");
@@ -67,7 +67,7 @@ namespace csharpwebsite.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Source")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<int>("Subject")
                         .HasColumnType("int");
@@ -90,7 +90,7 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<Guid?>("ReplyId")
                         .HasColumnType("char(36)");
@@ -121,7 +121,7 @@ namespace csharpwebsite.Server.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime(6)");
@@ -179,11 +179,11 @@ namespace csharpwebsite.Server.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("AvatarPath")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<int>("Grade")
                         .HasColumnType("int");
@@ -193,7 +193,7 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.Property<byte[]>("PasswordHash")
                         .HasColumnType("longblob");
@@ -203,7 +203,7 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("longtext CHARACTER SET latin1");
 
                     b.HasKey("Id");
 

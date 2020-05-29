@@ -44,7 +44,7 @@ namespace csharpwebsite.Server
             }
             else
             {
-                services.AddDbContext<DataContext, DataContext>();
+                services.AddDbContext<DataContext, MariaDBDataContext>();
             }
             */
 
