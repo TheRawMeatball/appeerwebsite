@@ -28,6 +28,7 @@ services:
         ports: 
           - "80:80"
           - "443:443"
+        restart: on-failure
 
     db:
         image: mariadb
@@ -45,6 +46,7 @@ services:
         secrets: 
           - source: mycnf
             target: /etc/mysql/my.cnf
+        restart: on-failure
     
 volumes: 
     dbdata:
