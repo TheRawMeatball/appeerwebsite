@@ -6,7 +6,7 @@ using csharpwebsite.Server.Entities;
 
 namespace csharpwebsite.Server.Helpers
 {
-    public class DataContext : DbContext
+    public abstract class DataContext : DbContext
     {
         protected readonly IConfiguration Configuration;
 

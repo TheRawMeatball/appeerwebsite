@@ -14,7 +14,7 @@ namespace csharpwebsite.Client.Services
         public void log(object obj)
         {
 #if DEBUG
-            ((IJSInProcessRuntime)_jsRuntime).Invoke<object>("log", obj);
+            ((IJSInProcessRuntime)_jsRuntime).InvokeVoid("log", obj);
 #endif
         }
     }

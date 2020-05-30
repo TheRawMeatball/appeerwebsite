@@ -42,10 +42,14 @@ namespace csharpwebsite.Server.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody]AuthenticateModel model)
         {
-            var user = await _userService.Authenticate(model.Username, model.Password);
-
-            if (user == null){
-                return BadRequest(new AuthUserModel{Error = "Username or password incorrect."});
+            User user;
+            try
+            {
+                user = await _userService.Authenticate(model.Email, model.Password);
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(new AuthUserModel{ Error = ex.Message });
             }
 
             // return basic user info and authentication token
@@ -92,6 +96,22 @@ namespace csharpwebsite.Server.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("google-signin")]
+        public async Task<IActionResult> GoogleSignin([FromBody]string jwt)
+        {
+            try
+            {
+                // create user
+                var user = await _userService.GoogleSignin(jwt);
+                return Ok(AuthMapper(user));
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromForm]RegisterModel model)
         {
@@ -101,8 +121,8 @@ namespace csharpwebsite.Server.Controllers
             try
             {
                 // create user
-                await _userService.Create(user, model.Password, Request.Form.Files);
-                return Ok(AuthMapper(user));
+                var _user = await _userService.Create(user, model.Password, Request.Form.Files);
+                return Ok(AuthMapper(_user));
             }
             catch (AppException ex)
             {

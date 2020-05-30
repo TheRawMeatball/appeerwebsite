@@ -25,6 +25,7 @@ namespace csharpwebsite.Server.Controllers
         private IUserService _userService;
         private IQuestionService _questionService;
         private IReplyService _replyService;
+        private IImageService _imageService;
         private IMapper _mapper;
         private readonly AppSettings _appSettings;
 
@@ -32,6 +33,7 @@ namespace csharpwebsite.Server.Controllers
             IUserService userService,
             IQuestionService questionService,
             IReplyService replyService,
+            IImageService imageService,
             IMapper mapper,
             IOptions<AppSettings> appSettings)
         {
@@ -159,6 +161,13 @@ namespace csharpwebsite.Server.Controllers
         {
             var reply = _mapper.Map<Reply>(model);
             reply.AuthorId = Guid.Parse(User.Identity.Name);
+
+            try
+            {
+                await _imageService.GetSingleImage(Request.Form.Files, "replyImg");
+            }
+            catch (AppException) { }
+
             return Ok(await _replyService.Reply((await _questionService.GetQuestionWithRepliesById(id)).Replies, reply));
         }
 

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace csharpwebsite.Server.Migrations
 {
-    public partial class InitialMariaDB : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace csharpwebsite.Server.Migrations
                     Id = table.Column<Guid>(nullable: false),
                     FirstName = table.Column<string>(nullable: false),
                     LastName = table.Column<string>(nullable: false),
-                    Username = table.Column<string>(nullable: false),
+                    Email = table.Column<string>(nullable: false),
                     AvatarPath = table.Column<string>(nullable: true),
                     Grade = table.Column<int>(nullable: false),
                     Admin = table.Column<bool>(nullable: false),

@@ -8,12 +8,16 @@ namespace csharpwebsite.Server.Entities
     public class User
     {
         public Guid Id { get; set; }
+
         [Required]
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
+
         [Required]
-        public string Username { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
+
         public string AvatarPath {get; set; }
         public int Grade { get; set; }
 

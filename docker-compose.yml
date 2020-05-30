@@ -21,7 +21,7 @@ services:
             uid: root
             MYSQL_ROOT_PASSWORD: mypwd
             DATABASE_ADDRESS: db
-            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_ENVIRONMENT: Release
             ASPNETCORE_URLS: https://+:443;http://+:80
             ASPNETCORE_Kestrel__Certificates__Default__Password: P3PE_TH3_FR0G_1S_F0R3VER
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx

@@ -100,6 +100,7 @@ namespace csharpwebsite.Server
 
             Directory.CreateDirectory(appSettings.UploadPath + "/avatars");
             Directory.CreateDirectory(appSettings.UploadPath + "/questions");
+            Directory.CreateDirectory(appSettings.UploadPath + "/replyImgs");
             try
             {
                 File.Copy(appSettings.DefaultAvatarPath, $"{appSettings.UploadPath}avatars/person.svg+xml");

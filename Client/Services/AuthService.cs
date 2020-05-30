@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using BlazorInputFile;
 using System.IO;
 using System.Collections.Generic;
+using Microsoft.JSInterop;
 
 namespace csharpwebsite.Client.Services
 {
@@ -19,16 +20,19 @@ namespace csharpwebsite.Client.Services
         private readonly HttpClient _httpClient;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly ILocalStorageService _localStorage;
+        private readonly IJSRuntime _jsRuntime;
         private readonly State _state;
 
         public AuthService(HttpClient httpClient,
                            AuthenticationStateProvider authenticationStateProvider,
                            ILocalStorageService localStorage,
+                           IJSRuntime jsRuntime,
                            State state)
         {
             _httpClient = httpClient;
             _authenticationStateProvider = authenticationStateProvider;
             _localStorage = localStorage;
+            _jsRuntime = jsRuntime;
             _state = state;
         }
 
@@ -45,7 +49,7 @@ namespace csharpwebsite.Client.Services
                 }
             }
 
-            req.Add(new StringContent(registerModel.Username), "username");
+            req.Add(new StringContent(registerModel.Email), "Email");
             req.Add(new StringContent(registerModel.FirstName), "FirstName");
             req.Add(new StringContent(registerModel.LastName), "LastName");
             req.Add(new StringContent(registerModel.Password), "Password");
@@ -83,7 +87,7 @@ namespace csharpwebsite.Client.Services
                     Id = result.Id,
                     FirstName = result.FirstName,
                     LastName = result.LastName,
-                    Username = result.Username,
+                    Email = result.Email,
                     Grade = result.Grade,
                     Admin = result.Admin,
                     Instructor = result.Instructor
@@ -102,12 +106,19 @@ namespace csharpwebsite.Client.Services
         {
             await _localStorage.RemoveItemAsync("authToken");
             await _localStorage.RemoveItemAsync("authTokenExpiry");
+            await _localStorage.RemoveItemAsync("userId");
             lock (_state)
             {
                 _state.User = null;
             }
             ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
             _httpClient.DefaultRequestHeaders.Authorization = null;
+            await _jsRuntime.InvokeVoidAsync("googleSignOut");
+        }
+
+        public async Task<AuthUserModel> GoogleSignin(string token)
+        {
+            return await SetAuthState(await _httpClient.PostJsonAsync<AuthUserModel>("api/users/google-signin", token));
         }
     }
 }

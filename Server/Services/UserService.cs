@@ -11,17 +11,17 @@ namespace csharpwebsite.Server.Services
 {
     public interface IUserService
     {
-        Task<User> Authenticate(string username, string password);
+        Task<User> Authenticate(string email, string password);
         Task<User> GetById(Guid id);
         Task<List<Question>> GetQuestionsById(Guid id);
         Task<List<Note>> GetNotesById(Guid id);
-        Task<User> GetByUsername(string username);
         Task<User> Create(User user, string password, IFormFileCollection formFiles);
         Task Update(User user, string password = null, IFormFileCollection formFiles = null);
         Task Delete(Guid id);
         Task<string> GetAvatarPathById(Guid id);
         Task MakeInstructor(Guid id);
         Task MakeAdmin(Guid id);
+        Task<User> GoogleSignin(string jwt);
     }
 
     public class UserService : IUserService
@@ -35,21 +35,23 @@ namespace csharpwebsite.Server.Services
             _imageService = imageService;
         }
 
-        public async Task<User> Authenticate(string username, string password)
+        public async Task<User> Authenticate(string email, string password)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 return null;
 
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username);
-            
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
 
-            // check if username exists
-            if (user == null)
-                return null;
+            // check if user exists
+            _ = user ?? throw new AppException("Incorrect email address");
+
+            _ = user.PasswordHash ?? throw new AppException("Password not set");
 
             // check if password is correct
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
+            {
+                throw new AppException("Incorrect password");;
+            }
 
             // authentication successful
             return user;
@@ -86,11 +88,6 @@ namespace csharpwebsite.Server.Services
             return _imageService.AvatarPath + (user.AvatarPath ?? "person.svg+xml");
         }
 
-        public Task<User> GetByUsername(string username)
-        {
-            return _context.Users.FirstOrDefaultAsync(x => x.Username == username);
-        }
-
         public async Task<User> Create(User user, string password, IFormFileCollection formFiles)
         {
             // validation
@@ -98,8 +95,8 @@ namespace csharpwebsite.Server.Services
                 throw new AppException("Password is required");
             }
 
-            if (await _context.Users.AnyAsync(x => x.Username == user.Username)) {
-                throw new AppException("Username \"" + user.Username + "\" is already taken");
+            if (await _context.Users.AnyAsync(x => x.Email == user.Email)) {
+                throw new AppException($"Email \"{user.Email}\" is already taken");
             }
             
             user.AvatarPath = await _imageService.GetSingleImage(formFiles, "avatar");
@@ -122,6 +119,17 @@ namespace csharpwebsite.Server.Services
             return user;
         }
 
+        private bool IsValidEmail(string email)
+        {
+            try {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch {
+                return false;
+            }
+        }
+
         public async Task Update(User userParam, string password = null, IFormFileCollection formFiles = null)
         {
             var user = await _context.Users.FindAsync(userParam.Id);
@@ -130,14 +138,19 @@ namespace csharpwebsite.Server.Services
                 throw new AppException("User not found");
             }
 
-            // update username if it has changed
-            if (!string.IsNullOrWhiteSpace(userParam.Username) && userParam.Username != user.Username)
+            // update email if it has changed
+            if (!string.IsNullOrWhiteSpace(userParam.Email) && userParam.Email != user.Email)
             {
-                // throw error if the new username is already taken
-                if (_context.Users.Any(x => x.Username == userParam.Username))
-                    throw new AppException("Username " + userParam.Username + " is already taken");
+                // throw error if the email is already taken
+                if (_context.Users.Any(x => x.Email == userParam.Email))
+                    throw new AppException($"Email {userParam.Email} is already taken");
 
-                user.Username = userParam.Username;
+                if (!IsValidEmail(userParam.Email))
+                {
+                    throw new AppException($"Email {userParam.Email} is not valid");
+                }
+
+                user.Email = userParam.Email;
             }
 
             // update user properties if provided
@@ -185,6 +198,55 @@ namespace csharpwebsite.Server.Services
             }
         }
 
+        public async Task MakeInstructor(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            user.Instructor = true;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task MakeAdmin(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            user.Admin = true;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+    
+        public async Task<User> GoogleSignin(string jwt)
+        {
+            Google.Apis.Auth.GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(jwt);
+            }
+            catch (Google.Apis.Auth.InvalidJwtException)
+            {
+                throw new AppException("Invalid JWT");
+            }
+            
+            var User = await _context.Users.Where(x => x.Email == payload.Email).FirstOrDefaultAsync();
+            
+            if (User == null)
+            { 
+                User = new Entities.User ()
+                {
+                    Email = payload.Email,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+
+                    PasswordHash=null,
+                    PasswordSalt=null
+                };
+
+                await _context.Users.AddAsync(User);
+                _context.SaveChanges();
+            }
+
+            return User;
+        }
+        
         // private helper methods
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -216,22 +278,6 @@ namespace csharpwebsite.Server.Services
             }
 
             return true;
-        }
-
-        public async Task MakeInstructor(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            user.Instructor = true;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task MakeAdmin(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            user.Admin = true;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
         }
     }
 }

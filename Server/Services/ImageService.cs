@@ -33,6 +33,7 @@ namespace csharpwebsite.Server.Services
 
         public string AvatarPath => _configuration.UploadPath + "avatars/";
         public string QuestionPath => _configuration.UploadPath + "questions/";
+        public string ReplyImgPath => _configuration.UploadPath + "replyImgs/";
 
         public async Task Delete(string source)
         {
@@ -51,7 +52,7 @@ namespace csharpwebsite.Server.Services
                     throw new AppException("file is labelled incorrectly");
                 }
                 var filePath = _filePath ?? Guid.NewGuid() + Path.GetExtension(f.FileName);
-                var fullFilePath = _configuration.UploadPath + f.Name + "s/" + filePath;
+                var fullFilePath = $"{_configuration.UploadPath}{f.Name}s/{filePath}";
                 using (var stream = System.IO.File.Create(fullFilePath))
                 {
                     await f.CopyToAsync(stream);

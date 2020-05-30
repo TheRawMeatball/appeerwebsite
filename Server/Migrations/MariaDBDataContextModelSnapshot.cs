@@ -2,17 +2,15 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using csharpwebsite.Server.Helpers;
 
 namespace csharpwebsite.Server.Migrations
 {
     [DbContext(typeof(MariaDBDataContext))]
-    [Migration("20200529154854_Initial-MariaDB")]
-    partial class InitialMariaDB
+    partial class MariaDBDataContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,6 +181,10 @@ namespace csharpwebsite.Server.Migrations
                     b.Property<string>("AvatarPath")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -202,10 +204,6 @@ namespace csharpwebsite.Server.Migrations
 
                     b.Property<byte[]>("PasswordSalt")
                         .HasColumnType("longblob");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
